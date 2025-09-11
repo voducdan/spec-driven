@@ -23,7 +23,7 @@ REPO_NAME="spec-driven"
 echo "📋 Repository Configuration:"
 echo "   GitHub Username: $GITHUB_USERNAME"
 echo "   Repository Name: $REPO_NAME"
-echo "   Remote URL: https://github.com/$GITHUB_USERNAME/$REPO_NAME.git"
+echo "   Remote URL: git@github.com/$GITHUB_USERNAME/$REPO_NAME.git"
 echo ""
 
 # Confirm with user
@@ -35,7 +35,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo "🔗 Adding GitHub remote..."
-git remote add origin https://github.com/$GITHUB_USERNAME/$REPO_NAME.git
+git remote add origin git@github.com:$GITHUB_USERNAME/$REPO_NAME.git
 
 echo "📤 Pushing to GitHub..."
 git branch -M main
@@ -46,14 +46,14 @@ if [ $? -eq 0 ]; then
     echo "✅ Successfully pushed to GitHub!"
     echo ""
     echo "🌐 Next Steps for GitHub Pages:"
-    echo "1. Go to https://github.com/$GITHUB_USERNAME/$REPO_NAME/settings/pages"
+    echo "1. Go to git@github.com:$GITHUB_USERNAME/$REPO_NAME/settings/pages"
     echo "2. Source: Select 'GitHub Actions'"
     echo "3. The workflow will automatically deploy your portfolio"
     echo ""
     echo "🎯 Your portfolio will be available at:"
     echo "   https://$GITHUB_USERNAME.github.io/$REPO_NAME/"
     echo ""
-    echo "📊 Repository: https://github.com/$GITHUB_USERNAME/$REPO_NAME"
+    echo "📊 Repository: git@github.com:$GITHUB_USERNAME/$REPO_NAME"
 else
     echo ""
     echo "❌ Failed to push to GitHub"
