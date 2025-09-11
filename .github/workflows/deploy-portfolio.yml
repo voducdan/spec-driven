@@ -50,12 +50,27 @@ jobs:
       run: |
         echo "Build directory contents:"
         ls -la portfolio-app/dist/
+        echo "Checking if dist/index.html exists:"
+        test -f portfolio-app/dist/index.html && echo "✅ index.html found" || echo "❌ index.html missing"
         
     - name: Setup Pages
+      id: pages
       uses: actions/configure-pages@v4
-      with:
-        # Enable Pages if not already enabled
-        enablement: true
+      continue-on-error: true
+      # Pages must be manually enabled in repository settings first
+      
+    - name: Check Pages Configuration
+      run: |
+        if [ "${{ steps.pages.outcome }}" = "failure" ]; then
+          echo "⚠️ Pages setup failed - this is expected if Pages isn't enabled yet"
+          echo "📋 To fix this:"
+          echo "1. Go to repository Settings → Pages"
+          echo "2. Set Source to 'GitHub Actions'"
+          echo "3. Re-run this workflow"
+          echo "4. Repository must be public for free GitHub Pages"
+        else
+          echo "✅ Pages configuration successful"
+        fi
       
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
@@ -74,3 +89,18 @@ jobs:
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+      continue-on-error: true
+      
+    - name: Deployment Status
+      run: |
+        if [ "${{ steps.deployment.outcome }}" = "success" ]; then
+          echo "🎉 Deployment successful!"
+          echo "🌐 Portfolio available at: ${{ steps.deployment.outputs.page_url }}"
+        else
+          echo "❌ Deployment failed"
+          echo "📋 Ensure GitHub Pages is enabled:"
+          echo "   1. Go to Settings → Pages"
+          echo "   2. Set Source to 'GitHub Actions'"
+          echo "   3. Repository must be public"
+          echo "   4. Re-run this workflow"
+        fi
