@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dan Vo - Data Engineer Portfolio | Airflow DAG</title>
+    <meta
+      name="description"
+      content="Interactive portfolio showcasing Dan Vo's data engineering experience through Apache Airflow DAG visualization"
+    />
+
+    <!-- Airflow-inspired SVG definitions -->
+    <svg style="display: none">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#017CEE" />
+        </marker>
+      </defs>
+    </svg>
+    <script type="module" crossorigin src="/assets/index-DvPeikWj.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BqGcJpY8.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- Application will be rendered here -->
+      <div class="loading-screen">
+        <div class="loading-content">
+          <div class="airflow-logo">⚡</div>
+          <h2>Initializing Portfolio DAG...</h2>
+          <div class="loading-bar">
+            <div class="loading-progress"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #017cee 0%, #1e3a8a 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        color: white;
+      }
+
+      .loading-content {
+        text-align: center;
+      }
+
+      .airflow-logo {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: rotate 2s linear infinite;
+      }
+
+      .loading-bar {
+        width: 200px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 1rem;
+      }
+
+      .loading-progress {
+        width: 100%;
+        height: 100%;
+        background: white;
+        transform: translateX(-100%);
+        animation: loading 2s ease-in-out infinite;
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes loading {
+        0%,
+        100% {
+          transform: translateX(-100%);
+        }
+        50% {
+          transform: translateX(0%);
+        }
+      }
+    </style>
+  </body>
+</html>
