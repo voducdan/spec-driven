@@ -1,6 +1,11 @@
 import './style.css'
 import { portfolioData } from './data/portfolio-data.js'
 
+// Add global error handling
+window.addEventListener('error', (e) => {
+  console.error('Global error:', e.error)
+})
+
 // Simplified portfolio initialization
 async function initPortfolio() {
   console.log('🚀 Starting simplified portfolio initialization...')
@@ -68,10 +73,6 @@ async function initPortfolio() {
             ${Object.values(portfolioData.skills).map(skill => `
               <div class="portfolio-item">
                 <h3>${skill.category}</h3>
-                <div class="skill-bar">
-                  <div class="skill-progress" style="width: ${skill.proficiency}%"></div>
-                  <span class="skill-percentage">${skill.proficiency}%</span>
-                </div>
                 <div class="skill-items">
                   ${skill.items.map(item => `<span class="skill-tag">${item}</span>`).join('')}
                 </div>
@@ -131,21 +132,45 @@ async function enableDagVisualization() {
   console.log('🎯 Attempting to load DAG visualization...')
   
   try {
+    console.log('📦 Importing WorkflowCanvas...')
     const { WorkflowCanvas } = await import('./components/WorkflowCanvas.js')
+    console.log('✅ WorkflowCanvas imported successfully')
     
-    const portfolioContent = document.querySelector('.portfolio-content')
-    portfolioContent.innerHTML = `
-      <div id="workflow-canvas" class="canvas-wrapper">
-        <!-- DAG will be rendered here -->
+    // Replace the entire body content with full-screen DAG
+    document.body.innerHTML = `
+      <div class="dag-fullscreen-container">
+        <div class="dag-header">
+          <div class="dag-title">
+            <h1>📊 Portfolio DAG - ${portfolioData.personal.name}</h1>
+            <button id="exit-dag" class="btn-secondary">← Back to Portfolio</button>
+          </div>
+          <div class="dag-info">
+            <span class="dag-status running">●</span>
+            <span>Portfolio Workflow Active</span>
+          </div>
+        </div>
+        <div id="workflow-canvas" class="dag-canvas-fullscreen">
+          <!-- DAG will be rendered here -->
+        </div>
       </div>
     `
     
+    console.log('🎪 Creating WorkflowCanvas instance...')
     const canvas = new WorkflowCanvas('workflow-canvas')
+    
+    console.log('📊 Creating portfolio DAG...')
     await canvas.createPortfolioDAG()
+    
+    // Add exit functionality
+    document.getElementById('exit-dag')?.addEventListener('click', () => {
+      console.log('🔄 Reloading to return to portfolio...')
+      location.reload() // Simple way to go back to portfolio
+    })
     
     console.log('✅ DAG visualization enabled successfully')
   } catch (error) {
     console.error('❌ Failed to enable DAG visualization:', error)
+    console.error('Error stack:', error.stack)
     throw error
   }
 }

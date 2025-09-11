@@ -17,14 +17,25 @@ export class WorkflowCanvas {
     this.tasks = new Map()
     this.groups = new Map()
     this.connections = []
-    this.canvasWidth = 1400
-    this.canvasHeight = 900
+    
+    // Set canvas dimensions to full viewport
+    this.canvasWidth = window.innerWidth
+    this.canvasHeight = window.innerHeight - 80 // Account for header
+    
     this.scale = 1
     this.pan = { x: 0, y: 0 }
     this.isDragging = false
     this.selectedTask = null
     this.animationQueue = []
     this.isAnimating = false
+    
+    // Handle window resize
+    this.handleResize = () => {
+      this.canvasWidth = window.innerWidth
+      this.canvasHeight = window.innerHeight - 80
+      this.updateCanvasSize()
+    }
+    window.addEventListener('resize', this.handleResize)
     
     console.log('🚀 Calling init method...')
     this.init()
@@ -228,12 +239,17 @@ export class WorkflowCanvas {
       }
     }
     
+    console.log(`🎯 Adding task "${task.title}" at position (${x}, ${y})`)
     this.tasks.set(task.id, { task, x, y })
     const taskElement = task.render(x, y)
     this.tasksLayer.appendChild(taskElement)
     
     // Add click handler for sidebar updates
     taskElement.addEventListener('click', () => this.selectTask(task))
+    
+    // Log the task element for debugging
+    console.log(`✅ Task "${task.title}" element created:`, taskElement)
+    console.log(`📍 Task position: left=${taskElement.style.left}, top=${taskElement.style.top}`)
     
     this.updateStats()
     return task
@@ -311,6 +327,12 @@ export class WorkflowCanvas {
     const toData = this.tasks.get(toTaskId)
 
     if (!fromData || !toData) {
+      console.warn(`⚠️ Cannot draw connection: missing task data for ${fromTaskId} -> ${toTaskId}`)
+      return
+    }
+
+    if (!this.connectionsLayer) {
+      console.error('❌ Connections layer not available for drawing connection')
       return
     }
 
@@ -323,23 +345,28 @@ export class WorkflowCanvas {
     const toX = toData.x
     const toY = toData.y + 40
 
-    // Create SVG line for straight connection (for test compatibility)
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-    line.setAttribute('x1', fromX)
-    line.setAttribute('y1', fromY)
-    line.setAttribute('x2', toX)
-    line.setAttribute('y2', toY)
-    line.setAttribute('class', 'task-connection')
-    line.setAttribute('stroke', this.getConnectionColor(fromTask.status))
-    line.setAttribute('stroke-width', '2')
-    line.setAttribute('marker-end', `url(#arrowhead-${fromTask.status})`)
-    
-    if (animated) {
-      line.style.strokeDasharray = '5,5'
-      line.style.animation = 'drawConnection 1s ease-out forwards'
-    }
+    try {
+      // Create SVG line for straight connection (for test compatibility)
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+      line.setAttribute('x1', fromX)
+      line.setAttribute('y1', fromY)
+      line.setAttribute('x2', toX)
+      line.setAttribute('y2', toY)
+      line.setAttribute('class', 'task-connection')
+      line.setAttribute('stroke', this.getConnectionColor(fromTask.status))
+      line.setAttribute('stroke-width', '2')
+      line.setAttribute('marker-end', `url(#arrowhead-${fromTask.status})`)
+      
+      if (animated) {
+        line.style.strokeDasharray = '5,5'
+        line.style.animation = 'drawConnection 1s ease-out forwards'
+      }
 
-    this.connectionsLayer.appendChild(line)
+      this.connectionsLayer.appendChild(line)
+      console.log(`✅ Connection drawn: ${fromTaskId} -> ${toTaskId}`)
+    } catch (svgError) {
+      console.error(`❌ Failed to create SVG connection line:`, svgError)
+    }
   }
 
   getConnectionColor(status) {
@@ -370,31 +397,43 @@ export class WorkflowCanvas {
         console.log(`📝 Creating ${dagData.tasks.length} tasks...`)
         dagData.tasks.forEach((taskData, index) => {
           console.log(`Creating task ${index + 1}: ${taskData.title}`)
-          const task = new TaskNode(
-            taskData.id, 
-            taskData.title, 
-            taskData.type, 
-            taskData.status,
-            taskData.description,
-            taskData.position
-          )
-          
-          task.dependencies = taskData.dependencies || []
-          this.addTask(task, taskData.position.x, taskData.position.y)
+          try {
+            const task = new TaskNode(
+              taskData.id, 
+              taskData.title, 
+              taskData.type, 
+              taskData.status,
+              taskData.description,
+              taskData.position
+            )
+            
+            task.dependencies = taskData.dependencies || []
+            this.addTask(task, taskData.position.x, taskData.position.y)
+            console.log(`✅ Task "${taskData.title}" created successfully`)
+          } catch (taskError) {
+            console.error(`❌ Failed to create task "${taskData.title}":`, taskError)
+            // Continue with other tasks instead of failing completely
+          }
         })
 
         // Create task groups
         if (dagData.taskGroups && dagData.taskGroups.length > 0) {
           console.log(`📦 Creating ${dagData.taskGroups.length} task groups...`)
           dagData.taskGroups.forEach((groupData, index) => {
-            console.log(`Creating group ${index + 1}: ${groupData.title}`)
-            const group = new TaskGroup(
-              groupData.id,
-              groupData.title,
-              groupData.tasks || [],
-              groupData.collapsed
-            )
-            this.addGroup(group, groupData.position.x, groupData.position.y)
+            try {
+              console.log(`Creating group ${index + 1}: ${groupData.title}`)
+              const group = new TaskGroup(
+                groupData.id,
+                groupData.title,
+                groupData.tasks || [],
+                groupData.collapsed
+              )
+              this.addGroup(group, groupData.position.x, groupData.position.y)
+              console.log(`✅ Group "${groupData.title}" created successfully`)
+            } catch (groupError) {
+              console.error(`❌ Failed to create group "${groupData.title}":`, groupError)
+              // Continue with other groups
+            }
           })
         }
 
@@ -403,8 +442,14 @@ export class WorkflowCanvas {
         dagData.tasks.forEach(taskData => {
           if (taskData.dependencies && taskData.dependencies.length > 0) {
             taskData.dependencies.forEach(depId => {
-              console.log(`Adding connection: ${depId} -> ${taskData.id}`)
-              this.addConnection(depId, taskData.id, true)
+              try {
+                console.log(`Adding connection: ${depId} -> ${taskData.id}`)
+                this.addConnection(depId, taskData.id, true)
+                console.log(`✅ Connection created: ${depId} -> ${taskData.id}`)
+              } catch (connectionError) {
+                console.error(`❌ Failed to create connection ${depId} -> ${taskData.id}:`, connectionError)
+                // Continue with other connections
+              }
             })
           }
         })
@@ -414,8 +459,12 @@ export class WorkflowCanvas {
         
         console.log('✅ Portfolio DAG created successfully!')
         
-        // Resolve the promise after a short delay to ensure DOM updates
-        setTimeout(() => resolve(), 100)
+        // Center the DAG and fit to screen
+        setTimeout(() => {
+          this.centerDAG()
+          this.fitToScreen()
+          resolve()
+        }, 200)
         
       } catch (error) {
         console.error('❌ Error creating portfolio DAG:', error)
@@ -694,6 +743,27 @@ export class WorkflowCanvas {
     console.log('Refreshing Portfolio DAG...')
     this.createPortfolioDAG()
     this.centerDAG()
+  }
+
+  updateCanvasSize() {
+    // Update the SVG connections layer size
+    const connectionsLayer = this.container.querySelector('.connections-layer')
+    if (connectionsLayer) {
+      connectionsLayer.setAttribute('width', this.canvasWidth)
+      connectionsLayer.setAttribute('height', this.canvasHeight)
+    }
+    
+    // Update the canvas container size
+    const canvas = this.container.querySelector('.workflow-canvas')
+    if (canvas) {
+      canvas.style.width = `${this.canvasWidth}px`
+      canvas.style.height = `${this.canvasHeight}px`
+    }
+    
+    // Redraw connections if they exist
+    if (this.connections.length > 0) {
+      this.redrawConnections()
+    }
   }
 }
 

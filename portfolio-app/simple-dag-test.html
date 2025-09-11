@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple DAG Test</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f0f0f0; }
+        .container { width: 100vw; height: 100vh; position: relative; }
+        .workflow-canvas { 
+            width: 100%; 
+            height: 100%; 
+            background: white; 
+            position: relative;
+            overflow: hidden;
+        }
+        .tasks-layer { 
+            width: 100%; 
+            height: 100%; 
+            position: relative; 
+        }
+        .task-node {
+            position: absolute;
+            width: 200px;
+            min-height: 60px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .task-node.status-success { border-color: #10b981; }
+        .task-node.status-running { border-color: #f59e0b; }
+        .task-node.status-pending { border-color: #6b7280; }
+        .log { 
+            position: fixed; 
+            top: 10px; 
+            right: 10px; 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 10px; 
+            border-radius: 4px; 
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="log" class="log"></div>
+    <div class="container">
+        <div id="workflow-canvas" class="workflow-canvas">
+            <div class="tasks-layer" id="tasks-layer">
+                <!-- Tasks will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const log = document.getElementById('log');
+        function logMessage(msg) {
+            console.log(msg);
+            log.innerHTML += msg + '<br>';
+            log.scrollTop = log.scrollHeight;
+        }
+
+        try {
+            logMessage('Starting simple DAG test...');
+            
+            const tasksLayer = document.getElementById('tasks-layer');
+            
+            // Create simple test tasks
+            const tasks = [
+                { id: 'task1', title: 'Education', x: 100, y: 100, status: 'success' },
+                { id: 'task2', title: 'Experience', x: 400, y: 100, status: 'success' },
+                { id: 'task3', title: 'Skills', x: 700, y: 100, status: 'running' },
+                { id: 'task4', title: 'Projects', x: 1000, y: 100, status: 'pending' }
+            ];
+            
+            tasks.forEach(taskData => {
+                const taskNode = document.createElement('div');
+                taskNode.className = `task-node status-${taskData.status}`;
+                taskNode.style.left = `${taskData.x}px`;
+                taskNode.style.top = `${taskData.y}px`;
+                taskNode.innerHTML = `
+                    <h4>${taskData.title}</h4>
+                    <p>Status: ${taskData.status}</p>
+                    <p>Position: (${taskData.x}, ${taskData.y})</p>
+                `;
+                tasksLayer.appendChild(taskNode);
+                logMessage(`Added task: ${taskData.title} at (${taskData.x}, ${taskData.y})`);
+            });
+            
+            logMessage('✅ Simple DAG test completed!');
+            
+        } catch (error) {
+            logMessage(`❌ Error: ${error.message}`);
+        }
+    </script>
+</body>
+</html>
