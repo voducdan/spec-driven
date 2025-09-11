@@ -103,3 +103,10 @@ ehthumbs.db
 
 # Vite specific
 .vite
+
+# Portfolio-app specific
+portfolio-app/dist/
+portfolio-app/node_modules/
+portfolio-app/.vite/
+portfolio-app/coverage/
+portfolio-app/.nyc_output/
