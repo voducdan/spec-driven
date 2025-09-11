@@ -13,7 +13,7 @@ node_modules
 .pnp.js
 
 # Build outputs
-dist
+# dist  # Commented out to allow GitHub Pages deployment
 dist-ssr
 *.local
 
