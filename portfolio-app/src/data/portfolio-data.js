@@ -230,7 +230,7 @@ export const portfolioData = {
         type: 'education',
         status: 'success',
         dependencies: [],
-        position: { x: 150, y: 150 },
+        position: { x: 120, y: 140 },
         description: 'HCM University of Science - Bachelor IT (7.3/10 GPA)',
       },
       {
@@ -239,7 +239,7 @@ export const portfolioData = {
         type: 'experience',
         status: 'success',
         dependencies: ['edu'],
-        position: { x: 450, y: 150 },
+        position: { x: 440, y: 140 },
         description: '4+ years at MoMo, Amanotes, FPT Software, ACB',
       },
       {
@@ -248,7 +248,7 @@ export const portfolioData = {
         type: 'skills',
         status: 'running',
         dependencies: ['edu', 'exp'],
-        position: { x: 750, y: 150 },
+        position: { x: 760, y: 140 },
         description: 'Python, Spark, Airflow, K8S, ClickHouse, GCP',
       },
       {
@@ -257,7 +257,7 @@ export const portfolioData = {
         type: 'certifications',
         status: 'success',
         dependencies: ['skills'],
-        position: { x: 600, y: 350 },
+        position: { x: 600, y: 380 },
         description: 'ClickHouse, GCP, HackerRank SQL Advanced',
       },
       {
@@ -266,7 +266,7 @@ export const portfolioData = {
         type: 'projects',
         status: 'pending',
         dependencies: ['skills', 'exp'],
-        position: { x: 450, y: 350 },
+        position: { x: 440, y: 380 },
         description: '5 major projects: Airflow K8S, Lakehouse, Real-time Analytics',
       },
     ],

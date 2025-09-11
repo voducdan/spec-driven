@@ -90,12 +90,39 @@ export class WorkflowCanvas {
         </div>
         
         <div class="dag-status">
-          <span class="status-indicator" id="dag-status-indicator"></span>
-          <span id="dag-status-text">Portfolio DAG</span>
-          <div class="dag-stats">
-            <span class="stat">Tasks: <span id="task-count">0</span></span>
-            <span class="stat">Success: <span id="success-count">0</span></span>
-            <span class="stat">Running: <span id="running-count">0</span></span>
+          <div class="dag-info-section">
+            <span class="status-indicator" id="dag-status-indicator"></span>
+            <span id="dag-status-text">Portfolio DAG</span>
+          </div>
+          <div class="dag-stats-professional">
+            <div class="stat-card">
+              <div class="stat-icon">📊</div>
+              <div class="stat-content">
+                <div class="stat-value" id="task-count">0</div>
+                <div class="stat-label">Total Tasks</div>
+              </div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-icon">✅</div>
+              <div class="stat-content">
+                <div class="stat-value" id="success-count">0</div>
+                <div class="stat-label">Completed</div>
+              </div>
+            </div>
+            <div class="stat-card running">
+              <div class="stat-icon">⚡</div>
+              <div class="stat-content">
+                <div class="stat-value" id="running-count">0</div>
+                <div class="stat-label">In Progress</div>
+              </div>
+            </div>
+            <div class="stat-card failed">
+              <div class="stat-icon">❌</div>
+              <div class="stat-content">
+                <div class="stat-value" id="failed-count">0</div>
+                <div class="stat-label">Failed</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -187,7 +214,12 @@ export class WorkflowCanvas {
     // Layout controls
     this.container.querySelector('#layout-horizontal')?.addEventListener('click', () => this.setLayout('horizontal'))
     this.container.querySelector('#layout-vertical')?.addEventListener('click', () => this.setLayout('vertical'))
-    this.container.querySelector('#auto-layout')?.addEventListener('click', () => this.autoLayoutTasks())
+    this.container.querySelector('#auto-layout')?.addEventListener('click', () => {
+      console.log('🎯 Enhanced Auto Layout button clicked')
+      this.autoLayoutTasks()
+      this.fitToScreen()
+      console.log('✅ Enhanced auto-layout completed')
+    })
     this.container.querySelector('#toggle-groups')?.addEventListener('click', () => this.toggleGroups())
     this.container.querySelector('#refresh-dag')?.addEventListener('click', () => this.refresh())
     
@@ -614,10 +646,12 @@ export class WorkflowCanvas {
     const taskCount = this.tasks.size
     const successCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'success').length
     const runningCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'running').length
+    const failedCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'failed').length
     
     this.container.querySelector('#task-count').textContent = taskCount
     this.container.querySelector('#success-count').textContent = successCount
     this.container.querySelector('#running-count').textContent = runningCount
+    this.container.querySelector('#failed-count').textContent = failedCount
   }
 
   zoom(factor, center = null) {
@@ -768,12 +802,13 @@ export class WorkflowCanvas {
     }
   }
 
-  // Helper method to detect and resolve task overlaps
-  detectAndResolveOverlaps() {
+  // Enhanced overlap detection with better collision resolution
+  detectAndResolveOverlapsEnhanced() {
     const taskArray = Array.from(this.tasks.values())
-    const taskWidth = 200
-    const taskHeight = 120
-    const minSpacing = 50
+    const taskWidth = 240
+    const taskHeight = 150
+    const minSpacing = 60
+    const resolvedOverlaps = new Set()
     
     for (let i = 0; i < taskArray.length; i++) {
       for (let j = i + 1; j < taskArray.length; j++) {
@@ -785,63 +820,103 @@ export class WorkflowCanvas {
         const yOverlap = Math.abs(task1.y - task2.y) < (taskHeight + minSpacing)
         
         if (xOverlap && yOverlap) {
-          console.warn(`⚠️ Overlap detected between "${task1.task.title}" and "${task2.task.title}"`)
-          
-          // Resolve overlap by moving the second task
-          if (task2.x <= task1.x) {
-            task2.x = task1.x - (taskWidth + minSpacing)
-          } else {
-            task2.x = task1.x + (taskWidth + minSpacing)
+          const overlapKey = `${Math.min(i, j)}-${Math.max(i, j)}`
+          if (!resolvedOverlaps.has(overlapKey)) {
+            console.warn(`⚠️ Enhanced overlap resolution between "${task1.task.title}" and "${task2.task.title}"`)
+            
+            // Smart resolution: move task with fewer dependencies
+            const task1Dependencies = this.getTaskDependencies(task1.task.id).length
+            const task2Dependencies = this.getTaskDependencies(task2.task.id).length
+            
+            let taskToMove = task2Dependencies <= task1Dependencies ? task2 : task1
+            let staticTask = taskToMove === task2 ? task1 : task2
+            
+            // Calculate best direction to move (prefer right/down to maintain flow)
+            const deltaX = taskToMove.x - staticTask.x
+            const deltaY = taskToMove.y - staticTask.y
+            
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+              // Move horizontally
+              taskToMove.x = staticTask.x + (deltaX > 0 ? (taskWidth + minSpacing) : -(taskWidth + minSpacing))
+            } else {
+              // Move vertically
+              taskToMove.y = Math.max(80, staticTask.y + (deltaY > 0 ? (taskHeight + minSpacing) : -(taskHeight + minSpacing)))
+            }
+            
+            // Update the task element position with animation
+            if (taskToMove.task.element) {
+              taskToMove.task.element.style.left = `${taskToMove.x}px`
+              taskToMove.task.element.style.top = `${taskToMove.y}px`
+            }
+            
+            resolvedOverlaps.add(overlapKey)
+            console.log(`📍 Smart repositioned "${taskToMove.task.title}" to avoid overlap: (${taskToMove.x}, ${taskToMove.y})`)
           }
-          
-          // Update the task element position
-          task2.task.element.style.left = `${task2.x}px`
-          console.log(`📍 Moved "${task2.task.title}" to avoid overlap: (${task2.x}, ${task2.y})`)
         }
       }
     }
   }
 
-  // Improved method to auto-layout tasks to prevent overlaps
+  // Helper method to get task dependencies
+  getTaskDependencies(taskId) {
+    return this.connections.filter(conn => conn.to === taskId)
+  }
+
+  // Enhanced method to auto-layout tasks with smart spacing and overlap prevention
   autoLayoutTasks() {
-    console.log('🎨 Auto-layouting tasks to prevent overlaps...')
+    console.log('🎨 Auto-layouting tasks with enhanced spacing...')
     
     const taskArray = Array.from(this.tasks.values())
-    const taskWidth = 220 // 200px + padding
-    const taskHeight = 140 // approximate height + padding
-    const startX = 150
-    const startY = 150
+    const taskWidth = 240 // Increased width for better spacing
+    const taskHeight = 150 // Increased height for better spacing
+    const horizontalSpacing = 80 // Increased horizontal gap
+    const verticalSpacing = 40 // Increased vertical gap
+    const startX = 100
+    const startY = 120
     
     // Group tasks by their dependency level (topological layers)
     const levels = this.getTaskLevels()
+    const maxTasksInLevel = Math.max(...Object.values(levels).map(tasks => tasks.length))
     
     Object.entries(levels).forEach(([level, taskIds]) => {
       const levelNum = parseInt(level)
       const tasksInLevel = taskIds.length
       
+      // Calculate total height needed for this level
+      const totalLevelHeight = (tasksInLevel - 1) * (taskHeight + verticalSpacing)
+      const levelStartY = startY + (maxTasksInLevel * (taskHeight + verticalSpacing) / 2) - (totalLevelHeight / 2)
+      
       taskIds.forEach((taskId, index) => {
         const taskData = this.tasks.get(taskId)
         if (taskData) {
           // Calculate position based on level and index within level
-          const x = startX + (levelNum * (taskWidth + 50))
-          const y = startY + (index * (taskHeight + 30)) - ((tasksInLevel - 1) * (taskHeight + 30) / 2)
+          const x = startX + (levelNum * (taskWidth + horizontalSpacing))
+          const y = Math.max(80, levelStartY + (index * (taskHeight + verticalSpacing)))
           
           // Update task position
           taskData.x = x
-          taskData.y = Math.max(50, y) // Ensure minimum Y position
+          taskData.y = y
           
           if (taskData.task.element) {
             taskData.task.element.style.left = `${x}px`
-            taskData.task.element.style.top = `${Math.max(50, y)}px`
+            taskData.task.element.style.top = `${y}px`
+            
+            // Add smooth transition for repositioning
+            taskData.task.element.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
           }
           
-          console.log(`📍 Positioned "${taskData.task.title}" at level ${levelNum}: (${x}, ${Math.max(50, y)})`)
+          console.log(`📍 Enhanced positioning "${taskData.task.title}" at level ${levelNum}: (${x}, ${y})`)
         }
       })
     })
     
+    // Apply final overlap detection and resolution
+    this.detectAndResolveOverlapsEnhanced()
+    
     // Redraw connections after repositioning
-    this.redrawConnections()
+    setTimeout(() => {
+      this.redrawConnections()
+    }, 100)
   }
 
   // Get task levels based on dependencies (topological sort by levels)
