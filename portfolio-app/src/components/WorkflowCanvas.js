@@ -53,74 +53,48 @@ export class WorkflowCanvas {
 
     console.log('📝 Setting container innerHTML...')
     this.container.innerHTML = `
-      <div class="workflow-toolbar">
-        <div class="toolbar-section">
-          <button id="play-dag" class="btn-primary" title="Run DAG">
+      <div class="airflow-header-controls">
+        <div class="left-controls">
+          <button id="play-dag" class="control-btn primary" title="Run DAG">
             <svg width="16" height="16" viewBox="0 0 16 16">
               <path d="M3 2l10 6-10 6V2z" fill="currentColor"/>
             </svg>
-            Run
+            <span>Run</span>
           </button>
-          <button id="pause-dag" title="Pause DAG">
+          <button id="pause-dag" class="control-btn" title="Pause DAG">
             <svg width="16" height="16" viewBox="0 0 16 16">
               <rect x="3" y="2" width="3" height="12" fill="currentColor"/>
               <rect x="10" y="2" width="3" height="12" fill="currentColor"/>
             </svg>
           </button>
-          <button id="stop-dag" title="Stop DAG">
+          <button id="stop-dag" class="control-btn" title="Stop DAG">
             <svg width="16" height="16" viewBox="0 0 16 16">
               <rect x="3" y="3" width="10" height="10" fill="currentColor"/>
             </svg>
           </button>
+          <div class="control-divider"></div>
+          <button id="zoom-in" class="control-btn" title="Zoom In">🔍+</button>
+          <button id="zoom-out" class="control-btn" title="Zoom Out">🔍-</button>
+          <button id="fit-screen" class="control-btn" title="Fit to Screen">📱</button>
+          <button id="center-dag" class="control-btn" title="Center DAG">🎯</button>
+          <button id="refresh-dag" class="control-btn" title="Refresh">🔄</button>
         </div>
         
-        <div class="toolbar-section">
-          <button id="zoom-in" title="Zoom In">🔍+</button>
-          <button id="zoom-out" title="Zoom Out">🔍-</button>
-          <button id="fit-screen" title="Fit to Screen">📱</button>
-          <button id="center-dag" title="Center DAG">🎯</button>
-        </div>
-        
-        <div class="toolbar-section">
-          <button id="layout-horizontal" title="Horizontal Layout">⟷</button>
-          <button id="layout-vertical" title="Vertical Layout">↕</button>
-          <button id="auto-layout" title="Auto Layout (Prevent Overlaps)">🎯</button>
-          <button id="toggle-groups" title="Toggle Groups">📂</button>
-          <button id="refresh-dag" title="Refresh">🔄</button>
-        </div>
-        
-        <div class="dag-status">
-          <div class="dag-info-section">
-            <span class="status-indicator" id="dag-status-indicator"></span>
-            <span id="dag-status-text">Portfolio DAG</span>
-          </div>
-          <div class="dag-stats-professional">
-            <div class="stat-card">
-              <div class="stat-icon">📊</div>
-              <div class="stat-content">
-                <div class="stat-value" id="task-count">0</div>
-                <div class="stat-label">Total Tasks</div>
+        <div class="right-controls">
+          <div class="task-status-summary">
+            <h3>Task status count here</h3>
+            <div class="status-counts">
+              <div class="status-item">
+                <span class="status-dot completed"></span>
+                <span class="status-text">Completed: <span id="success-count">0</span></span>
               </div>
-            </div>
-            <div class="stat-card success">
-              <div class="stat-icon">✅</div>
-              <div class="stat-content">
-                <div class="stat-value" id="success-count">0</div>
-                <div class="stat-label">Completed</div>
+              <div class="status-item">
+                <span class="status-dot running"></span>
+                <span class="status-text">In Progress: <span id="running-count">0</span></span>
               </div>
-            </div>
-            <div class="stat-card running">
-              <div class="stat-icon">⚡</div>
-              <div class="stat-content">
-                <div class="stat-value" id="running-count">0</div>
-                <div class="stat-label">In Progress</div>
-              </div>
-            </div>
-            <div class="stat-card failed">
-              <div class="stat-icon">❌</div>
-              <div class="stat-content">
-                <div class="stat-value" id="failed-count">0</div>
-                <div class="stat-label">Failed</div>
+              <div class="status-item">
+                <span class="status-dot failed"></span>
+                <span class="status-text">Failed: <span id="failed-count">0</span></span>
               </div>
             </div>
           </div>
@@ -155,18 +129,19 @@ export class WorkflowCanvas {
         <div class="tasks-layer">
           <!-- Task nodes and groups will be rendered here -->
         </div>
-        <div class="canvas-overlay">
-          <div class="minimap" id="minimap"></div>
-        </div>
       </div>
       
-      <div class="workflow-sidebar" id="sidebar">
-        <div class="sidebar-header">
+      <div class="dag-details-footer">
+        <div class="footer-left">
           <h3>DAG Details</h3>
-          <button id="toggle-sidebar">📌</button>
+          <div class="dag-info-items">
+            <span class="info-item">
+              <strong>What is Interactive or Flow?</strong>
+            </span>
+          </div>
         </div>
-        <div class="sidebar-content" id="sidebar-content">
-          <p>Select a task to view details</p>
+        <div class="footer-right">
+          <button id="toggle-sidebar" class="control-btn">📌 Details</button>
         </div>
       </div>
     `
@@ -175,8 +150,6 @@ export class WorkflowCanvas {
     this.canvas = this.container.querySelector('#canvas')
     this.connectionsLayer = this.container.querySelector('.connections-layer')
     this.tasksLayer = this.container.querySelector('.tasks-layer')
-    this.sidebar = this.container.querySelector('#sidebar')
-    this.sidebarContent = this.container.querySelector('#sidebar-content')
 
     // Verify all critical elements are found
     if (!this.canvas) {
@@ -224,8 +197,11 @@ export class WorkflowCanvas {
     this.container.querySelector('#toggle-groups')?.addEventListener('click', () => this.toggleGroups())
     this.container.querySelector('#refresh-dag')?.addEventListener('click', () => this.refresh())
     
-    // Sidebar toggle
-    this.container.querySelector('#toggle-sidebar')?.addEventListener('click', () => this.toggleSidebar())
+    // Sidebar toggle (footer button)
+    this.container.querySelector('#toggle-sidebar')?.addEventListener('click', () => {
+      // For now, just show an alert or console log since we don't have a sidebar
+      console.log('Details toggle clicked - sidebar functionality can be added later')
+    })
   }
 
   setupPanAndZoom() {
@@ -306,50 +282,27 @@ export class WorkflowCanvas {
   }
 
   selectTask(task) {
-    // Update sidebar with task details
+    // Update task selection (highlight selected task)
     this.selectedTask = task
-    this.updateSidebar(task)
     
     // Highlight selected task
     document.querySelectorAll('.task-node.selected').forEach(node => {
       node.classList.remove('selected')
     })
     task.element?.classList.add('selected')
+    
+    // Show detailed view or modal instead of sidebar
+    if (task.showDetailedView) {
+      task.showDetailedView()
+    }
+    
+    console.log('Task selected:', task.title)
   }
 
   updateSidebar(task) {
-    const data = task.getPortfolioData()
-    let content = `
-      <div class="task-details-sidebar">
-        <h4>${task.getIcon()} ${task.title}</h4>
-        <div class="task-meta">
-          <p><strong>Type:</strong> ${task.type}</p>
-          <p><strong>Status:</strong> ${task.getStatusText()}</p>
-          <p><strong>Dependencies:</strong> ${task.dependencies.length > 0 ? task.dependencies.join(', ') : 'None'}</p>
-        </div>
-    `
-
-    if (task.description) {
-      content += `<p class="task-description">${task.description}</p>`
-    }
-
-    if (data) {
-      content += `<div class="task-data">${task.renderDetails()}</div>`
-    }
-
-    content += `
-        <div class="task-actions-sidebar">
-          <button class="btn-secondary" onclick="this.closest('.workflow-canvas').workflowCanvas.runTask('${task.id}')">
-            Run Task
-          </button>
-          <button class="btn-secondary" onclick="this.closest('.workflow-canvas').workflowCanvas.showTaskLogs('${task.id}')">
-            View Logs
-          </button>
-        </div>
-      </div>
-    `
-
-    this.sidebarContent.innerHTML = content
+    // Sidebar removed - this method is kept for compatibility
+    // but doesn't do anything in the new layout
+    console.log('updateSidebar called for task:', task.title, '- No sidebar in new layout')
   }
 
   addConnection(fromTaskId, toTaskId, animated = false) {
@@ -794,7 +747,8 @@ export class WorkflowCanvas {
   }
 
   toggleSidebar() {
-    this.sidebar.classList.toggle('collapsed')
+    // Sidebar removed in new layout - method kept for compatibility
+    console.log('toggleSidebar called - No sidebar in new Airflow layout')
   }
 
   runTask(taskId) {

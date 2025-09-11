@@ -1,6 +1,7 @@
 /* Airflow-Inspired Portfolio Styles */
 @import './styles/airflow-theme.css';
 @import './styles/responsive.css';
+@import './styles/airflow-layout.css';
 
 /* Skip links for accessibility - hidden by default, visible on focus */
 .skip-link {
@@ -33,10 +34,12 @@ body {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
     sans-serif;
-  background-color: var(--background);
+  background-color: #f8fafc;
   color: var(--text-primary);
   line-height: 1.6;
-  overflow-x: auto;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 /* Header Styles */

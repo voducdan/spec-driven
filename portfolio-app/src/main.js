@@ -77,59 +77,7 @@ async function initPortfolio() {
     
     // Create DAG visualization layout
     app.innerHTML = `
-      <div style="
-        min-height: 100vh;
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-        color: white;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      ">
-        <header style="
-          padding: 2rem;
-          text-align: center;
-          border-bottom: 1px solid rgba(255,255,255,0.2);
-          background: rgba(255,255,255,0.05);
-        ">
-          <h1 style="
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #60a5fa, #34d399);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          ">🌟 Portfolio DAG - ${portfolioData.personal.name}</h1>
-          <div style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 1rem;">Interactive Data Engineering Portfolio</div>
-          <div style="
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-          ">
-            <button onclick="showSimpleView()" style="
-              background: rgba(255,255,255,0.2);
-              color: white;
-              border: 1px solid rgba(255,255,255,0.3);
-              padding: 8px 16px;
-              border-radius: 20px;
-              cursor: pointer;
-              font-size: 0.9rem;
-            ">📄 Simple View</button>
-            <button onclick="window.location.reload()" style="
-              background: rgba(255,255,255,0.2);
-              color: white;
-              border: 1px solid rgba(255,255,255,0.3);
-              padding: 8px 16px;
-              border-radius: 20px;
-              cursor: pointer;
-              font-size: 0.9rem;
-            ">🔄 Refresh</button>
-          </div>
-        </header>
-        
-        <div style="height: calc(100vh - 140px); position: relative;">
-          <div id="workflow-canvas" style="width: 100%; height: 100%;"></div>
-        </div>
-      </div>
+      <div id="workflow-canvas" style="width: 100%; height: 100vh;"></div>
     `
 
     console.log('✅ DAG layout created, initializing WorkflowCanvas...')

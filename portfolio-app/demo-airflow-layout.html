@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio DAG - Airflow Style</title>
+    <style>
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        #app {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .airflow-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-height: 70px;
+            flex-shrink: 0;
+        }
+        
+        .left-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .control-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-btn.primary {
+            background: rgba(34, 197, 94, 0.9);
+            border-color: rgba(34, 197, 94, 1);
+        }
+        
+        .control-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 0 0.5rem;
+        }
+        
+        .task-status-summary h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .status-counts {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .status-dot.completed {
+            background: #22c55e;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+        }
+        
+        .status-dot.running {
+            background: #f59e0b;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.failed {
+            background: #ef4444;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+        }
+        
+        .workflow-canvas {
+            background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #7c3aed 100%);
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tasks-layer {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            padding: 2rem;
+        }
+        
+        .task-node {
+            position: absolute;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            min-width: 200px;
+            min-height: 80px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        .task-node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .task-node.status-success {
+            border-color: #22c55e;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+        
+        .task-node.status-running {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+            animation: taskPulse 2s infinite;
+        }
+        
+        .task-node.status-pending {
+            border-color: #64748b;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        .task-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .task-icon {
+            font-size: 1.5rem;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .task-type {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .task-status {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .status-text {
+            font-weight: 500;
+        }
+        
+        .dag-details-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            min-height: 60px;
+            flex-shrink: 0;
+        }
+        
+        .footer-left h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-item {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes taskPulse {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="airflow-header-controls">
+            <div class="left-controls">
+                <button class="control-btn primary" onclick="runDAG()">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <path d="M3 2l10 6-10 6V2z" fill="currentColor"/>
+                    </svg>
+                    <span>Run</span>
+                </button>
+                <button class="control-btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <rect x="3" y="2" width="3" height="12" fill="currentColor"/>
+                        <rect x="10" y="2" width="3" height="12" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="control-btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16">
+                        <rect x="3" y="3" width="10" height="10" fill="currentColor"/>
+                    </svg>
+                </button>
+                <div class="control-divider"></div>
+                <button class="control-btn">🔍+</button>
+                <button class="control-btn">🔍-</button>
+                <button class="control-btn">📱</button>
+                <button class="control-btn">🎯</button>
+                <button class="control-btn">🔄</button>
+            </div>
+            
+            <div class="right-controls">
+                <div class="task-status-summary">
+                    <h3>Task status count here</h3>
+                    <div class="status-counts">
+                        <div class="status-item">
+                            <span class="status-dot completed"></span>
+                            <span class="status-text">Completed: <span id="completed-count">2</span></span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot running"></span>
+                            <span class="status-text">In Progress: <span id="running-count">1</span></span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-dot failed"></span>
+                            <span class="status-text">Failed: <span id="failed-count">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="workflow-canvas">
+            <div class="tasks-layer" id="tasks-layer">
+                <!-- Task nodes will be rendered here -->
+            </div>
+        </div>
+        
+        <div class="dag-details-footer">
+            <div class="footer-left">
+                <h3>DAG Details</h3>
+                <div class="dag-info-items">
+                    <span class="info-item">
+                        <strong>What is Interactive or Flow?</strong>
+                    </span>
+                </div>
+            </div>
+            <div class="footer-right">
+                <button class="control-btn">📌 Details</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample task data
+        const tasks = [
+            {
+                id: 'education',
+                title: 'Bachelor Information Technology',
+                icon: '🎓',
+                status: 'success',
+                type: 'education',
+                x: 100,
+                y: 100
+            },
+            {
+                id: 'experience', 
+                title: 'Data Engineer at MoMo',
+                icon: '💼',
+                status: 'success',
+                type: 'experience',
+                x: 400,
+                y: 100
+            },
+            {
+                id: 'skills',
+                title: 'Technical Skills',
+                icon: '⚡',
+                status: 'running',
+                type: 'skills',
+                x: 700,
+                y: 100
+            },
+            {
+                id: 'projects',
+                title: 'Portfolio Projects',
+                icon: '🚀',
+                status: 'pending',
+                type: 'projects',
+                x: 1000,
+                y: 100
+            }
+        ];
+
+        function createTaskNode(task) {
+            const taskNode = document.createElement('div');
+            taskNode.className = `task-node status-${task.status}`;
+            taskNode.style.left = `${task.x}px`;
+            taskNode.style.top = `${task.y}px`;
+            taskNode.id = `task-${task.id}`;
+            
+            taskNode.innerHTML = `
+                <div class="task-header">
+                    <span class="task-icon">${task.icon}</span>
+                    <h4 class="task-title">${task.title}</h4>
+                </div>
+                <div class="task-type">${task.type}</div>
+                <div class="task-status">
+                    <span class="status-dot ${task.status}"></span>
+                    <span class="status-text">${getStatusText(task.status)}</span>
+                </div>
+            `;
+            
+            taskNode.addEventListener('click', () => {
+                console.log('Task clicked:', task.title);
+                taskNode.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    taskNode.style.transform = '';
+                }, 200);
+            });
+            
+            return taskNode;
+        }
+
+        function getStatusText(status) {
+            const statusTexts = {
+                pending: 'Pending',
+                running: 'In Progress', 
+                success: 'Completed',
+                failed: 'Failed'
+            };
+            return statusTexts[status] || status;
+        }
+
+        function renderTasks() {
+            const tasksLayer = document.getElementById('tasks-layer');
+            tasks.forEach(task => {
+                const taskNode = createTaskNode(task);
+                tasksLayer.appendChild(taskNode);
+            });
+            
+            updateTaskCounts();
+        }
+
+        function updateTaskCounts() {
+            const completed = tasks.filter(t => t.status === 'success').length;
+            const running = tasks.filter(t => t.status === 'running').length;
+            const failed = tasks.filter(t => t.status === 'failed').length;
+            
+            document.getElementById('completed-count').textContent = completed;
+            document.getElementById('running-count').textContent = running;
+            document.getElementById('failed-count').textContent = failed;
+        }
+
+        function runDAG() {
+            console.log('Running DAG...');
+            tasks.forEach((task, index) => {
+                if (task.status === 'pending') {
+                    setTimeout(() => {
+                        task.status = 'running';
+                        const taskNode = document.getElementById(`task-${task.id}`);
+                        taskNode.className = `task-node status-running`;
+                        taskNode.querySelector('.status-dot').className = `status-dot running`;
+                        taskNode.querySelector('.status-text').textContent = 'In Progress';
+                        updateTaskCounts();
+                        
+                        setTimeout(() => {
+                            task.status = 'success';
+                            taskNode.className = `task-node status-success`;
+                            taskNode.querySelector('.status-dot').className = `status-dot completed`;
+                            taskNode.querySelector('.status-text').textContent = 'Completed';
+                            updateTaskCounts();
+                        }, 2000);
+                    }, index * 500);
+                }
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTasks();
+            console.log('Portfolio DAG demo loaded successfully!');
+        });
+    </script>
+</body>
+</html>
