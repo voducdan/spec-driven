@@ -19,12 +19,27 @@
 ./deploy-to-github.sh voducdan
 ```
 
-### 3. Enable GitHub Pages
+### 3. Enable GitHub Pages (CRITICAL STEP)
+**⚠️ This must be done BEFORE the GitHub Action runs successfully:**
+
 1. Go to your repository on GitHub
 2. Click **Settings** tab
 3. Scroll down to **Pages** section (left sidebar)
-4. Under **Source**, select **GitHub Actions**
-5. The workflow will automatically deploy your portfolio
+4. Under **Source**, select **GitHub Actions** 
+   - **Important**: Do NOT select "Deploy from a branch"
+   - Must be "GitHub Actions" for the workflow to work
+5. Click **Save**
+6. Wait 2-3 minutes for the setting to take effect
+
+**🔍 Verify Pages is enabled:**
+- The Pages section should show: "Your site is ready to be published at https://YOUR_USERNAME.github.io/spec-driven/"
+- If you see "Get started with GitHub Pages", the setup is incomplete
+
+**🚨 If you get "Not Found" errors in GitHub Actions:**
+1. Double-check that Pages source is set to "GitHub Actions"
+2. Repository must be **Public** (required for free GitHub Pages)
+3. Re-run the failed workflow after enabling Pages
+4. Allow up to 10 minutes for first deployment
 
 ### 4. Access Your Portfolio
 Your portfolio will be available at:
@@ -69,6 +84,21 @@ After deployment, your repository will contain:
 - **Live portfolio**: Accessible via GitHub Pages
 
 ## ⚠️ Troubleshooting
+
+### "Not Found" Error in GitHub Actions
+**Error**: `Get Pages site failed. Please verify that the repository has Pages enabled`
+
+**Solution**:
+1. **Check Repository Visibility**: Must be Public (not Private)
+2. **Enable Pages First**:
+   - Go to Settings → Pages
+   - Set Source to "GitHub Actions" 
+   - Click Save and wait 2-3 minutes
+3. **Re-run the Workflow**:
+   - Go to Actions tab
+   - Click on the failed workflow
+   - Click "Re-run all jobs"
+4. **Verify Permissions**: Repository owner must have Pages access
 
 ### Build Failures
 - Check the Actions tab for build logs

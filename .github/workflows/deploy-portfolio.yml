@@ -13,6 +13,9 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  # Additional permissions for Pages setup
+  actions: read
+  deployments: write
 
 concurrency:
   group: "pages"
@@ -43,8 +46,16 @@ jobs:
         cd portfolio-app
         npm run build
         
+    - name: List build output
+      run: |
+        echo "Build directory contents:"
+        ls -la portfolio-app/dist/
+        
     - name: Setup Pages
       uses: actions/configure-pages@v4
+      with:
+        # Enable Pages if not already enabled
+        enablement: true
       
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3

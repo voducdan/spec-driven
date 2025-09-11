@@ -1,5 +1,21 @@
 #!/bin/bash
-# GitHub Deployment Script for Spec-Driven Portfolio
+# GitHub Deployment Script for if [ $? -eq 0 ]; then
+    echo ""
+    echo "✅ Successfully pushed to GitHub!"
+    echo ""
+    echo "🚨 CRITICAL: Enable GitHub Pages NOW (before workflow runs):"
+    echo "1. Go to https://github.com/$GITHUB_USERNAME/$REPO_NAME/settings/pages"
+    echo "2. Under 'Source': Select 'GitHub Actions' (NOT 'Deploy from branch')"
+    echo "3. Click 'Save' and wait 2-3 minutes"
+    echo "4. Repository must be PUBLIC for free GitHub Pages"
+    echo ""
+    echo "⚠️  If you skip this step, the GitHub Action will fail with 'Not Found' error"
+    echo ""
+    echo "🎯 After enabling Pages, your portfolio will be available at:"
+    echo "   https://$GITHUB_USERNAME.github.io/$REPO_NAME/"
+    echo ""
+    echo "📊 Repository: https://github.com/$GITHUB_USERNAME/$REPO_NAME"
+    echo "📋 Actions: https://github.com/$GITHUB_USERNAME/$REPO_NAME/actions"ortfolio
 
 echo "🚀 GitHub Deployment Helper"
 echo "=========================="
@@ -35,7 +51,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo "🔗 Adding GitHub remote..."
-git remote add origin git@github.com:$GITHUB_USERNAME/$REPO_NAME.git
+git remote add origin https://github.com/$GITHUB_USERNAME/$REPO_NAME.git
 
 echo "📤 Pushing to GitHub..."
 git branch -M main
