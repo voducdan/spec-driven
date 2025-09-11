@@ -14,6 +14,10 @@ export class TaskNode {
     this.element = null
     this.isExpanded = false
     this.animationDuration = 300
+    
+    // Transform properties
+    this.scale = 1
+    this.hoverScale = 1
   }
 
   addDependency(taskId) {
@@ -278,13 +282,27 @@ export class TaskNode {
   }
 
   onHover() {
-    this.element.style.transform = 'scale(1.05)'
+    this.hoverScale = 1.05
+    this.applyTransform()
     this.element.style.zIndex = '1000'
   }
 
   onHoverEnd() {
-    this.element.style.transform = 'scale(1)'
+    this.hoverScale = 1
+    this.applyTransform()
     this.element.style.zIndex = 'auto'
+  }
+
+  setScale(scale) {
+    this.scale = scale
+    this.applyTransform()
+  }
+
+  applyTransform() {
+    if (this.element) {
+      const finalScale = this.scale * this.hoverScale
+      this.element.style.transform = `scale(${finalScale})`
+    }
   }
 
   showDetailedView() {

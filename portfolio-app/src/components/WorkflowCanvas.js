@@ -188,6 +188,8 @@ export class WorkflowCanvas {
       // For now, just show an alert or console log since we don't have a sidebar
       console.log('Details toggle clicked - sidebar functionality can be added later')
     })
+
+    this.canvas.addEventListener('scroll', () => this.handleScroll())
   }
 
   setupPanAndZoom() {
@@ -224,6 +226,35 @@ export class WorkflowCanvas {
       e.preventDefault()
       const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1
       this.zoom(zoomFactor, { x: e.clientX, y: e.clientY })
+    })
+  }
+
+  handleScroll() {
+    if (!this.canvas) return
+
+    const viewportTop = this.canvas.scrollTop
+    const viewportHeight = this.canvas.clientHeight
+    const viewportCenter = viewportTop + viewportHeight / 2
+
+    const maxDistance = viewportHeight / 2
+    const minScale = 0.7
+    const maxScale = 1.0
+
+    this.tasks.forEach(({ task, y }) => {
+      if (task.element) {
+        const taskCenter = y + task.element.offsetHeight / 2
+        const distance = Math.abs(viewportCenter - taskCenter)
+
+        let scale
+        if (distance >= maxDistance) {
+          scale = minScale
+        } else {
+          // Calculate scale linearly from maxScale to minScale
+          scale = maxScale - (distance / maxDistance) * (maxScale - minScale)
+        }
+        
+        task.setScale(scale)
+      }
     })
   }
 
