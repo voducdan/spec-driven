@@ -221,17 +221,28 @@ export class TaskNode {
 
   toggleExpand() {
     this.isExpanded = !this.isExpanded
+    
+    if (!this.element) return
+    
     const details = this.element.querySelector('.task-details')
     const expandBtn = this.element.querySelector('.task-expand-btn')
     
-    if (this.isExpanded) {
-      details.classList.remove('collapsed')
-      details.classList.add('expanded')
-      expandBtn.classList.add('expanded')
-    } else {
-      details.classList.remove('expanded')
-      details.classList.add('collapsed')
-      expandBtn.classList.remove('expanded')
+    if (details) {
+      if (this.isExpanded) {
+        details.classList.remove('collapsed')
+        details.classList.add('expanded')
+      } else {
+        details.classList.remove('expanded')
+        details.classList.add('collapsed')
+      }
+    }
+    
+    if (expandBtn) {
+      if (this.isExpanded) {
+        expandBtn.classList.add('expanded')
+      } else {
+        expandBtn.classList.remove('expanded')
+      }
     }
   }
 
@@ -445,7 +456,10 @@ export class TaskNode {
     this.status = newStatus
     if (this.element) {
       this.element.className = `task-node task-${this.type} status-${newStatus}`
-      this.element.querySelector('.status-text').textContent = this.getStatusText()
+      const statusTextEl = this.element.querySelector('.status-text')
+      if (statusTextEl) {
+        statusTextEl.textContent = this.getStatusText()
+      }
     }
   }
 

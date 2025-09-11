@@ -130,20 +130,6 @@ export class WorkflowCanvas {
           <!-- Task nodes and groups will be rendered here -->
         </div>
       </div>
-      
-      <div class="dag-details-footer">
-        <div class="footer-left">
-          <h3>DAG Details</h3>
-          <div class="dag-info-items">
-            <span class="info-item">
-              <strong>What is Interactive or Flow?</strong>
-            </span>
-          </div>
-        </div>
-        <div class="footer-right">
-          <button id="toggle-sidebar" class="control-btn">📌 Details</button>
-        </div>
-      </div>
     `
 
     console.log('🔍 Querying DOM elements...')
@@ -595,8 +581,17 @@ export class WorkflowCanvas {
       }
     }
     
-    indicator.className = `status-indicator ${status}`
-    text.textContent = `Portfolio DAG - ${status.charAt(0).toUpperCase() + status.slice(1)}`
+    if (indicator) {
+      indicator.className = `status-indicator ${status}`
+    } else {
+      console.warn('⚠️ DAG status indicator element not found')
+    }
+    
+    if (text) {
+      text.textContent = `Portfolio DAG - ${status.charAt(0).toUpperCase() + status.slice(1)}`
+    } else {
+      console.warn('⚠️ DAG status text element not found')
+    }
   }
 
   updateStats() {

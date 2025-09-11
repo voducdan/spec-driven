@@ -180,6 +180,9 @@ export class TaskGroup {
 
   toggle() {
     this.isExpanded = !this.isExpanded
+    
+    if (!this.element) return
+    
     const content = this.element.querySelector('.group-content')
     const toggleIcon = this.element.querySelector('.toggle-icon')
     const toggleBtn = this.element.querySelector('.expand-toggle')
@@ -187,18 +190,30 @@ export class TaskGroup {
     if (this.isExpanded) {
       this.element.classList.remove('collapsed')
       this.element.classList.add('expanded')
-      content.style.maxHeight = `${this.tasks.length * 80 + 20}px`
-      toggleIcon.textContent = '▼'
-      toggleBtn.title = 'Collapse group'
+      if (content) {
+        content.style.maxHeight = `${this.tasks.length * 80 + 20}px`
+      }
+      if (toggleIcon) {
+        toggleIcon.textContent = '▼'
+      }
+      if (toggleBtn) {
+        toggleBtn.title = 'Collapse group'
+      }
       
       // Animate tasks in
       this.animateTasksIn()
     } else {
       this.element.classList.remove('expanded')
       this.element.classList.add('collapsed')
-      content.style.maxHeight = '0px'
-      toggleIcon.textContent = '▶'
-      toggleBtn.title = 'Expand group'
+      if (content) {
+        content.style.maxHeight = '0px'
+      }
+      if (toggleIcon) {
+        toggleIcon.textContent = '▶'
+      }
+      if (toggleBtn) {
+        toggleBtn.title = 'Expand group'
+      }
     }
 
     // Dispatch custom event
@@ -283,14 +298,25 @@ export class TaskGroup {
     taskNode.updateStatus('running')
     taskNode.pulse()
     
+    if (!this.element) return
+    
     // Update the group task item status
     const taskElement = Array.from(this.element.querySelectorAll('.group-task-item'))
-      .find(item => item.querySelector('.task-item-title').textContent === taskNode.title)
+      .find(item => {
+        const titleEl = item.querySelector('.task-item-title')
+        return titleEl && titleEl.textContent === taskNode.title
+      })
     
     if (taskElement) {
       taskElement.className = `group-task-item status-running`
-      taskElement.querySelector('.status-indicator').className = 'status-indicator running'
-      taskElement.querySelector('.status-text').textContent = 'Running'
+      const statusIndicator = taskElement.querySelector('.status-indicator')
+      const statusText = taskElement.querySelector('.status-text')
+      if (statusIndicator) {
+        statusIndicator.className = 'status-indicator running'
+      }
+      if (statusText) {
+        statusText.textContent = 'Running'
+      }
     }
 
     // Simulate task completion
@@ -298,8 +324,14 @@ export class TaskGroup {
       taskNode.updateStatus('success')
       if (taskElement) {
         taskElement.className = `group-task-item status-success`
-        taskElement.querySelector('.status-indicator').className = 'status-indicator success'
-        taskElement.querySelector('.status-text').textContent = 'Completed'
+        const statusIndicator = taskElement.querySelector('.status-indicator')
+        const statusText = taskElement.querySelector('.status-text')
+        if (statusIndicator) {
+          statusIndicator.className = 'status-indicator success'
+        }
+        if (statusText) {
+          statusText.textContent = 'Completed'
+        }
       }
       this.updateProgress()
     }, 1000 + Math.random() * 2000)
