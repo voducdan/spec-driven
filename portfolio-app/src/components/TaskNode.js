@@ -2,13 +2,14 @@
 import { portfolioData } from '../data/portfolio-data.js'
 
 export class TaskNode {
-  constructor(id, title, type, status = 'pending', description = '', position = { x: 0, y: 0 }) {
+  constructor(id, title, type, status = 'pending', description = '', position = { x: 0, y: 0 }, details = null) {
     this.id = id
     this.title = title
     this.type = type // 'education', 'experience', 'skills', 'projects', 'certifications'
     this.status = status // 'pending', 'running', 'success', 'failed'
     this.description = description
     this.position = position
+    this.details = details // New property for detailed information
     this.dependencies = []
     this.element = null
     this.isExpanded = false

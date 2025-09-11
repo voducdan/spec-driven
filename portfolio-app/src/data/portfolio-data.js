@@ -224,81 +224,221 @@ export const portfolioData = {
   // Airflow DAG structure for visualization
   dagStructure: {
     tasks: [
+      // Education Group Tasks
       {
-        id: 'edu',
-        title: 'Education Foundation',
+        id: 'edu-bachelor',
+        title: 'Bachelor Information Technology',
         type: 'education',
         status: 'success',
         dependencies: [],
         position: { x: 120, y: 140 },
-        description: 'HCM University of Science - Bachelor IT (7.3/10 GPA)',
+        description: 'HCM University of Science (8/2017 - 10/2021)',
+        details: {
+          institution: 'HCM University of Science',
+          degree: 'Bachelor Information Technology',
+          gpa: '7.3/10',
+          duration: '8/2017 - 10/2021'
+        }
       },
+
+      // Experience Group Tasks
       {
-        id: 'exp',
-        title: 'Professional Experience',
+        id: 'exp-momo',
+        title: 'Data Engineer at MoMo',
         type: 'experience',
         status: 'success',
-        dependencies: ['edu'],
-        position: { x: 440, y: 140 },
-        description: '4+ years at MoMo, Amanotes, FPT Software, ACB',
+        dependencies: ['edu-bachelor'],
+        position: { x: 420, y: 120 },
+        description: 'Current role: Airflow on K8S, Spark, ClickHouse',
+        details: {
+          company: 'MoMo',
+          position: 'Data Engineer',
+          duration: '7/2022 - Present',
+          highlights: [
+            'Operate and scale Airflow on Kubernetes to serve over 3,000 DAGs',
+            'Developed batch ingestion tool using Spark on K8S',
+            'Implemented real-time reporting with ClickHouse Kafka Connect',
+            'Designed lakehouse system based on medallion architecture'
+          ]
+        }
       },
       {
-        id: 'skills',
+        id: 'exp-amanotes',
+        title: 'Data Engineer at Amanotes',
+        type: 'experience',
+        status: 'success',
+        dependencies: ['edu-bachelor'],
+        position: { x: 420, y: 280 },
+        description: 'Event data modeling, API integration, DBT transforms',
+        details: {
+          company: 'Amanotes',
+          position: 'Data Engineer',
+          duration: '6/2021 - 7/2022',
+          highlights: [
+            'Designed data models for event data from games',
+            'Crawled/pulled data from partners APIs/Dashboards',
+            'Applied DBT for transforming raw data from firebase'
+          ]
+        }
+      },
+
+      // Skills Group Tasks
+      {
+        id: 'skills-technical',
         title: 'Technical Skills',
         type: 'skills',
         status: 'running',
-        dependencies: ['edu', 'exp'],
-        position: { x: 760, y: 140 },
+        dependencies: ['exp-momo', 'exp-amanotes'],
+        position: { x: 720, y: 140 },
         description: 'Python, Spark, Airflow, K8S, ClickHouse, GCP',
+        details: {
+          category: 'Technical Skills',
+          items: ['Spark', 'SQL', 'Data Modeling', 'ClickHouse', 'GCP', 'K8S', 'Docker', 'Airflow'],
+          proficiency: 90
+        }
       },
       {
-        id: 'certifications',
-        title: 'Certifications',
+        id: 'skills-programming',
+        title: 'Programming Languages',
+        type: 'skills',
+        status: 'success',
+        dependencies: ['exp-momo'],
+        position: { x: 720, y: 280 },
+        description: 'Python, JavaScript, OOP, Data Structures',
+        details: {
+          category: 'Programming Languages',
+          items: ['Python', 'Javascript', 'OOP', 'Data Structures and Algorithms'],
+          proficiency: 95
+        }
+      },
+
+      // Projects Group Tasks
+      {
+        id: 'proj-airflow-k8s',
+        title: 'Airflow on Kubernetes',
+        type: 'projects',
+        status: 'success',
+        dependencies: ['skills-technical'],
+        position: { x: 1020, y: 100 },
+        description: 'Scaled Airflow to serve 3,000+ DAGs on K8S',
+        details: {
+          title: 'Airflow on Kubernetes Platform',
+          technologies: ['Kubernetes', 'Apache Airflow', 'GitLab CI', 'Python'],
+          highlights: [
+            'Scaled to 3,000+ DAGs',
+            'P90 latency < 15 seconds',
+            'Advanced Airflow features optimization'
+          ]
+        }
+      },
+      {
+        id: 'proj-batch-ingestion',
+        title: 'Spark Batch Ingestion Tool',
+        type: 'projects',
+        status: 'success',
+        dependencies: ['skills-technical'],
+        position: { x: 1020, y: 200 },
+        description: 'Comprehensive batch ingestion with Spark on K8S',
+        details: {
+          title: 'Batch Ingestion Tool with Spark',
+          technologies: ['Apache Spark', 'Kubernetes', 'Python'],
+          highlights: [
+            'Full development lifecycle participation',
+            'Kubernetes Admission Control implementation',
+            'Secret management for data security'
+          ]
+        }
+      },
+      {
+        id: 'proj-clickhouse-streaming',
+        title: 'ClickHouse Real-time Analytics',
+        type: 'projects',
+        status: 'success',
+        dependencies: ['skills-technical'],
+        position: { x: 1020, y: 300 },
+        description: 'Real-time reporting with 5-minute update frequency',
+        details: {
+          title: 'Real-time Reporting with ClickHouse',
+          technologies: ['ClickHouse', 'Kafka Connect', 'ReplacingMergeTree'],
+          highlights: [
+            'Improved frequency from daily to 5-minute updates',
+            'Data deduplication and pre-aggregation',
+            'Dashboard query performance optimization'
+          ]
+        }
+      },
+
+      // Certifications Group Tasks
+      {
+        id: 'cert-clickhouse',
+        title: 'ClickHouse Certified Developer',
         type: 'certifications',
         status: 'success',
-        dependencies: ['skills'],
-        position: { x: 600, y: 380 },
-        description: 'ClickHouse, GCP, HackerRank SQL Advanced',
+        dependencies: ['skills-technical'],
+        position: { x: 1320, y: 140 },
+        description: 'ClickHouse official certification',
+        details: {
+          name: 'ClickHouse Certified Developer',
+          issuer: 'ClickHouse',
+          year: 'Current'
+        }
       },
       {
-        id: 'projects',
-        title: 'Portfolio Projects',
-        type: 'projects',
-        status: 'pending',
-        dependencies: ['skills', 'exp'],
-        position: { x: 440, y: 380 },
-        description: '5 major projects: Airflow K8S, Lakehouse, Real-time Analytics',
+        id: 'cert-gcp',
+        title: 'GCP Professional Data Engineer',
+        type: 'certifications',
+        status: 'success',
+        dependencies: ['skills-technical'],
+        position: { x: 1320, y: 240 },
+        description: 'Google Cloud Professional Data Engineer',
+        details: {
+          name: 'GCP Professional Data Engineer',
+          issuer: 'Google Cloud',
+          year: 'Current'
+        }
       },
     ],
 
     taskGroups: [
       {
-        id: 'education-details',
-        title: 'Education Breakdown',
-        tasks: ['degree', 'university', 'gpa'],
-        position: { x: 120, y: 800 },
-        collapsed: true,
+        id: 'education-group',
+        title: 'Education',
+        tasks: ['edu-bachelor'],
+        position: { x: 80, y: 90 },
+        collapsed: false,
+        color: '#10b981'
       },
       {
-        id: 'experience-details',
-        title: 'Experience Timeline',
-        tasks: ['momo', 'amanotes', 'fpt', 'acb'],
-        position: { x: 440, y: 800 },
-        collapsed: true,
+        id: 'experience-group',
+        title: 'Professional Experience',
+        tasks: ['exp-momo', 'exp-amanotes'],
+        position: { x: 350, y: 70 },
+        collapsed: false,
+        color: '#3b82f6'
       },
       {
-        id: 'skills-details',
-        title: 'Skills Matrix',
-        tasks: ['technical', 'programming', 'data-tools', 'cloud', 'databases'],
-        position: { x: 760, y: 800 },
-        collapsed: true,
+        id: 'skills-group',
+        title: 'Technical Skills',
+        tasks: ['skills-technical', 'skills-programming'],
+        position: { x: 650, y: 90 },
+        collapsed: false,
+        color: '#8b5cf6'
       },
       {
-        id: 'projects-details',
-        title: 'Project Details',
-        tasks: ['airflow-k8s', 'spark-ingestion', 'clickhouse-streaming', 'lakehouse', 'iac-pulumi'],
-        position: { x: 440, y: 950 },
-        collapsed: true,
+        id: 'projects-group',
+        title: 'Key Projects',
+        tasks: ['proj-airflow-k8s', 'proj-batch-ingestion', 'proj-clickhouse-streaming'],
+        position: { x: 950, y: 60 },
+        collapsed: false,
+        color: '#f59e0b'
+      },
+      {
+        id: 'certifications-group',
+        title: 'Certifications',
+        tasks: ['cert-clickhouse', 'cert-gcp'],
+        position: { x: 1250, y: 90 },
+        collapsed: false,
+        color: '#ef4444'
       },
     ],
   },

@@ -439,7 +439,8 @@ export class WorkflowCanvas {
               taskData.type, 
               taskData.status,
               taskData.description,
-              taskData.position
+              taskData.position,
+              taskData.details // Pass the details object
             )
             
             task.dependencies = taskData.dependencies || []
@@ -723,25 +724,30 @@ export class WorkflowCanvas {
   }
 
   centerDAG() {
-    // Calculate center of all tasks
-    const positions = Array.from(this.tasks.values()).map(({ x, y }) => ({ x, y }))
-    if (positions.length === 0) return
+    // Calculate center of all tasks and groups
+    const taskPositions = Array.from(this.tasks.values()).map(({ x, y }) => ({ x, y }))
+    const groupPositions = Array.from(this.groups.values()).map(({ x, y }) => ({ x, y }))
+    const allPositions = [...taskPositions, ...groupPositions]
+    
+    if (allPositions.length === 0) return
     
     const bounds = {
-      minX: Math.min(...positions.map(p => p.x)),
-      maxX: Math.max(...positions.map(p => p.x)),
-      minY: Math.min(...positions.map(p => p.y)),
-      maxY: Math.max(...positions.map(p => p.y))
+      minX: Math.min(...allPositions.map(p => p.x)),
+      maxX: Math.max(...allPositions.map(p => p.x)),
+      minY: Math.min(...allPositions.map(p => p.y)),
+      maxY: Math.max(...allPositions.map(p => p.y))
     }
     
+    // Center on the main tasks area (top portion) for better initial view
     const centerX = (bounds.minX + bounds.maxX) / 2
-    const centerY = (bounds.minY + bounds.maxY) / 2
+    const centerY = bounds.minY + 200 // Focus on the top area where main tasks are
     
     const canvasRect = this.canvas.getBoundingClientRect()
     this.pan.x = canvasRect.width / 2 - centerX * this.scale
     this.pan.y = canvasRect.height / 2 - centerY * this.scale
     
     this.updateCanvasTransform()
+    console.log(`🎯 Centered DAG on main tasks area: center=(${centerX}, ${centerY})`)
   }
 
   setLayout(layout) {
