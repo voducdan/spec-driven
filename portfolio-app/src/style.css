@@ -453,6 +453,80 @@ body {
   background: #991b1b;
 }
 
+/* Fallback Portfolio Styles */
+.fallback-portfolio {
+  padding: 40px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  margin: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.fallback-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fallback-header h2 {
+  color: #017cee;
+  margin-bottom: 10px;
+}
+
+.fallback-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.fallback-section {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  border-left: 4px solid #017cee;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.fallback-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.fallback-section h3 {
+  color: #1e293b;
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+}
+
+.fallback-section p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.fallback-footer {
+  text-align: center;
+}
+
+.fallback-footer .btn-primary {
+  background: #017cee;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.fallback-footer .btn-primary:hover {
+  background: #0066cc;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .workflow-container {

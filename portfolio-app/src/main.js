@@ -108,40 +108,85 @@ async function initWorkflowCanvas() {
   }
   
   console.log('📦 Creating WorkflowCanvas...')
-  const canvas = new WorkflowCanvas('workflow-canvas')
-
-  if (!canvas) {
-    throw new Error('Failed to create WorkflowCanvas instance')
-  }
-
-  console.log('🎨 WorkflowCanvas created successfully')
   
-  // Initialize performance optimization if available
   try {
-    if (performanceOptimizer && typeof performanceOptimizer.optimizeCanvas === 'function') {
-      if (canvas.canvas && canvas.context) {
-        performanceOptimizer.optimizeCanvas(canvas.canvas, canvas.context)
-        console.log('⚡ Performance optimization applied')
-      }
+    const canvas = new WorkflowCanvas('workflow-canvas')
+
+    if (!canvas) {
+      throw new Error('Failed to create WorkflowCanvas instance')
     }
-  } catch (perfError) {
-    console.warn('⚠️ Performance optimization failed:', perfError)
+
+    console.log('🎨 WorkflowCanvas created successfully')
+    
+    // Initialize performance optimization if available
+    try {
+      if (performanceOptimizer && typeof performanceOptimizer.optimizeCanvas === 'function') {
+        if (canvas.canvas && canvas.context) {
+          performanceOptimizer.optimizeCanvas(canvas.canvas, canvas.context)
+          console.log('⚡ Performance optimization applied')
+        }
+      }
+    } catch (perfError) {
+      console.warn('⚠️ Performance optimization failed:', perfError)
+    }
+
+    // Create the portfolio DAG
+    console.log('🏗️ Creating portfolio DAG...')
+    await canvas.createPortfolioDAG()
+    console.log('✅ Portfolio DAG created successfully!')
+
+    // Setup control buttons
+    setupDagControls(canvas)
+
+    // Initialize workflow state
+    if (workflowState && typeof workflowState.loadState === 'function') {
+      workflowState.loadState()
+    }
+    
+    console.log('✅ Workflow Canvas initialized successfully!')
+    
+  } catch (canvasError) {
+    console.error('❌ Canvas initialization failed:', canvasError)
+    
+    // Fallback: Show a simple portfolio layout without canvas
+    canvasContainer.innerHTML = `
+      <div class="fallback-portfolio">
+        <div class="fallback-header">
+          <h2>📊 Dan Vo - Data Engineer Portfolio</h2>
+          <p>Portfolio visualization temporarily unavailable - showing simplified view</p>
+        </div>
+        
+        <div class="fallback-sections">
+          <div class="fallback-section">
+            <h3>🎓 Education</h3>
+            <p>HCM University of Science - Bachelor IT (7.3/10 GPA)</p>
+          </div>
+          
+          <div class="fallback-section">
+            <h3>💼 Experience</h3>
+            <p>4+ years: MoMo (Current), Amanotes, FPT Software, ACB</p>
+          </div>
+          
+          <div class="fallback-section">
+            <h3>🔧 Skills</h3>
+            <p>Python, Spark, Airflow, K8S, ClickHouse, GCP</p>
+          </div>
+          
+          <div class="fallback-section">
+            <h3>🚀 Projects</h3>
+            <p>Airflow on K8S, Spark Ingestion, Real-time Analytics, Lakehouse</p>
+          </div>
+        </div>
+        
+        <div class="fallback-footer">
+          <button onclick="location.reload()" class="btn-primary">🔄 Retry Full Portfolio</button>
+        </div>
+      </div>
+    `
+    
+    // Still throw the error so we can handle it in the calling function
+    throw new Error(`Canvas initialization failed: ${canvasError.message}`)
   }
-
-  // Create the portfolio DAG
-  console.log('🏗️ Creating portfolio DAG...')
-  canvas.createPortfolioDAG()
-  console.log('✅ Portfolio DAG created successfully!')
-
-  // Setup control buttons
-  setupDagControls(canvas)
-
-  // Initialize workflow state
-  if (workflowState && typeof workflowState.loadState === 'function') {
-    workflowState.loadState()
-  }
-  
-  console.log('✅ Workflow Canvas initialized successfully!')
 }
 
 function showError(error) {

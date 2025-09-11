@@ -355,67 +355,73 @@ export class WorkflowCanvas {
   createPortfolioDAG() {
     console.log('🚀 Starting portfolio DAG creation...')
     
-    try {
-      this.clearCanvas()
-      
-      const dagData = portfolioData.dagStructure
-      console.log('📊 DAG data loaded:', dagData)
-      
-      if (!dagData || !dagData.tasks) {
-        throw new Error('DAG structure not found in portfolio data')
-      }
-
-      // Create main tasks from portfolio data
-      console.log(`📝 Creating ${dagData.tasks.length} tasks...`)
-      dagData.tasks.forEach((taskData, index) => {
-        console.log(`Creating task ${index + 1}: ${taskData.title}`)
-        const task = new TaskNode(
-          taskData.id, 
-          taskData.title, 
-          taskData.type, 
-          taskData.status,
-          taskData.description,
-          taskData.position
-        )
+    return new Promise((resolve, reject) => {
+      try {
+        this.clearCanvas()
         
-        task.dependencies = taskData.dependencies || []
-        this.addTask(task, taskData.position.x, taskData.position.y)
-      })
+        const dagData = portfolioData.dagStructure
+        console.log('📊 DAG data loaded:', dagData)
+        
+        if (!dagData || !dagData.tasks) {
+          throw new Error('DAG structure not found in portfolio data')
+        }
 
-      // Create task groups
-      if (dagData.taskGroups && dagData.taskGroups.length > 0) {
-        console.log(`📦 Creating ${dagData.taskGroups.length} task groups...`)
-        dagData.taskGroups.forEach((groupData, index) => {
-          console.log(`Creating group ${index + 1}: ${groupData.title}`)
-          const group = new TaskGroup(
-            groupData.id,
-            groupData.title,
-            groupData.tasks || [],
-            groupData.collapsed
+        // Create main tasks from portfolio data
+        console.log(`📝 Creating ${dagData.tasks.length} tasks...`)
+        dagData.tasks.forEach((taskData, index) => {
+          console.log(`Creating task ${index + 1}: ${taskData.title}`)
+          const task = new TaskNode(
+            taskData.id, 
+            taskData.title, 
+            taskData.type, 
+            taskData.status,
+            taskData.description,
+            taskData.position
           )
-          this.addGroup(group, groupData.position.x, groupData.position.y)
+          
+          task.dependencies = taskData.dependencies || []
+          this.addTask(task, taskData.position.x, taskData.position.y)
         })
-      }
 
-      // Create connections based on dependencies
-      console.log('🔗 Creating task connections...')
-      dagData.tasks.forEach(taskData => {
-        if (taskData.dependencies && taskData.dependencies.length > 0) {
-          taskData.dependencies.forEach(depId => {
-            console.log(`Adding connection: ${depId} -> ${taskData.id}`)
-            this.addConnection(depId, taskData.id, true)
+        // Create task groups
+        if (dagData.taskGroups && dagData.taskGroups.length > 0) {
+          console.log(`📦 Creating ${dagData.taskGroups.length} task groups...`)
+          dagData.taskGroups.forEach((groupData, index) => {
+            console.log(`Creating group ${index + 1}: ${groupData.title}`)
+            const group = new TaskGroup(
+              groupData.id,
+              groupData.title,
+              groupData.tasks || [],
+              groupData.collapsed
+            )
+            this.addGroup(group, groupData.position.x, groupData.position.y)
           })
         }
-      })
 
-      this.updateStats()
-      this.updateDAGStatus()
-      
-      console.log('✅ Portfolio DAG created successfully!')
-    } catch (error) {
-      console.error('❌ Error creating portfolio DAG:', error)
-      throw error
-    }
+        // Create connections based on dependencies
+        console.log('🔗 Creating task connections...')
+        dagData.tasks.forEach(taskData => {
+          if (taskData.dependencies && taskData.dependencies.length > 0) {
+            taskData.dependencies.forEach(depId => {
+              console.log(`Adding connection: ${depId} -> ${taskData.id}`)
+              this.addConnection(depId, taskData.id, true)
+            })
+          }
+        })
+
+        this.updateStats()
+        this.updateDAGStatus()
+        
+        console.log('✅ Portfolio DAG created successfully!')
+        
+        // Resolve the promise after a short delay to ensure DOM updates
+        setTimeout(() => resolve(), 100)
+        
+      } catch (error) {
+        console.error('❌ Error creating portfolio DAG:', error)
+        reject(error)
+      }
+    })
   }
 
   clearCanvas() {
