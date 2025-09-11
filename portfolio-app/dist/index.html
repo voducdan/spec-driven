@@ -68,6 +68,47 @@
       });
     </script>
 
+    <!-- Fallback to simple version if main module fails -->
+    <script>
+      // Check if portfolio loaded successfully after 8 seconds
+      setTimeout(function() {
+        var loadingScreen = document.querySelector('.loading-screen');
+        if (loadingScreen && loadingScreen.style.display !== 'none') {
+          console.log('🔄 Main portfolio failed to load, trying simple version...');
+          
+          // Try to load the simple version
+          var script = document.createElement('script');
+          script.src = '/spec-driven/main-simple.js';
+          script.onload = function() {
+            console.log('✅ Simple version loaded successfully');
+          };
+          script.onerror = function() {
+            console.error('❌ Simple version also failed to load');
+            // Show final error
+            if (loadingScreen) {
+              loadingScreen.innerHTML = `
+                <div class="loading-content">
+                  <div class="airflow-logo" style="color: #ef4444;">❌</div>
+                  <h2 style="color: #ef4444;">Portfolio Unavailable</h2>
+                  <p style="margin: 1rem 0;">Unable to load portfolio. Please contact Dan at voducdand99@gmail.com</p>
+                  <button onclick="window.location.reload()" style="
+                    background: #3b82f6; 
+                    color: white; 
+                    border: none; 
+                    padding: 0.75rem 1.5rem; 
+                    border-radius: 6px; 
+                    cursor: pointer;
+                    font-size: 1rem;
+                  ">🔄 Try Again</button>
+                </div>
+              `;
+            }
+          };
+          document.head.appendChild(script);
+        }
+      }, 8000);
+    </script>
+
     <style>
       .loading-screen {
         position: fixed;

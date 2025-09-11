@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/spec-driven/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dan Vo - Data Engineer Portfolio | Simple Version</title>
+    <meta
+      name="description"
+      content="Dan Vo's data engineering portfolio - simple fallback version"
+    />
+    <style>
+      /* Basic styles */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      
+      .loading-content {
+        text-align: center;
+        max-width: 400px;
+        padding: 2rem;
+      }
+      
+      .airflow-logo {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
+      
+      .loading-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 1.5rem;
+      }
+      
+      .loading-progress {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #60a5fa, #3b82f6);
+        border-radius: 2px;
+        animation: loading 3s ease-in-out infinite;
+      }
+      
+      @keyframes loading {
+        0% { width: 0%; }
+        50% { width: 70%; }
+        100% { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="loading-screen">
+        <div class="loading-content">
+          <div class="airflow-logo">⚡</div>
+          <h2>Loading Portfolio...</h2>
+          <div class="loading-bar">
+            <div class="loading-progress"></div>
+          </div>
+          <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">
+            Simple version loading...
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Load the simple version directly without modules -->
+    <script src="/spec-driven/main-simple.js"></script>
+    
+    <!-- Emergency fallback -->
+    <script>
+      setTimeout(function() {
+        var loadingScreen = document.querySelector('.loading-screen');
+        if (loadingScreen) {
+          console.log('🚨 Emergency fallback activated');
+          loadingScreen.innerHTML = `
+            <div class="loading-content">
+              <div class="airflow-logo" style="color: #ef4444;">❌</div>
+              <h2 style="color: #ef4444;">Loading Failed</h2>
+              <p style="margin: 1rem 0;">Unable to load portfolio. Please check your connection.</p>
+              <button onclick="window.location.reload()" style="
+                background: #3b82f6; 
+                color: white; 
+                border: none; 
+                padding: 0.75rem 1.5rem; 
+                border-radius: 6px; 
+                cursor: pointer;
+                font-size: 1rem;
+              ">🔄 Retry</button>
+            </div>
+          `;
+        }
+      }, 10000);
+    </script>
+  </body>
+</html>
