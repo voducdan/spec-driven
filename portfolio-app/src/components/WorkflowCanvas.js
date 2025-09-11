@@ -18,9 +18,9 @@ export class WorkflowCanvas {
     this.groups = new Map()
     this.connections = []
     
-    // Set canvas dimensions to full viewport
+    // Set canvas dimensions to full viewport with extra height for task groups
     this.canvasWidth = window.innerWidth
-    this.canvasHeight = window.innerHeight - 80 // Account for header
+    this.canvasHeight = Math.max(window.innerHeight - 80, 1200) // Ensure minimum height for task groups
     
     this.scale = 1
     this.pan = { x: 0, y: 0 }
@@ -32,7 +32,7 @@ export class WorkflowCanvas {
     // Handle window resize
     this.handleResize = () => {
       this.canvasWidth = window.innerWidth
-      this.canvasHeight = window.innerHeight - 80
+      this.canvasHeight = Math.max(window.innerHeight - 80, 1200) // Ensure minimum height for task groups
       this.updateCanvasSize()
     }
     window.addEventListener('resize', this.handleResize)
@@ -218,6 +218,7 @@ export class WorkflowCanvas {
       console.log('🎯 Enhanced Auto Layout button clicked')
       this.autoLayoutTasks()
       this.fitToScreen()
+      this.updateStats() // Update stats after auto-layout
       console.log('✅ Enhanced auto-layout completed')
     })
     this.container.querySelector('#toggle-groups')?.addEventListener('click', () => this.toggleGroups())
@@ -497,6 +498,8 @@ export class WorkflowCanvas {
         setTimeout(() => {
           this.autoLayoutTasks()
           this.centerDAG()
+          this.updateStats() // Update stats again after layout
+          console.log('🎯 Auto-layout completed and stats updated')
           resolve()
         }, 200)
         
@@ -643,15 +646,48 @@ export class WorkflowCanvas {
   }
 
   updateStats() {
+    console.log('📊 Updating task statistics...')
+    
     const taskCount = this.tasks.size
     const successCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'success').length
     const runningCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'running').length
     const failedCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'failed').length
     
-    this.container.querySelector('#task-count').textContent = taskCount
-    this.container.querySelector('#success-count').textContent = successCount
-    this.container.querySelector('#running-count').textContent = runningCount
-    this.container.querySelector('#failed-count').textContent = failedCount
+    console.log(`📈 Stats: Total=${taskCount}, Success=${successCount}, Running=${runningCount}, Failed=${failedCount}`)
+    
+    // Update with error handling
+    const taskCountEl = this.container.querySelector('#task-count')
+    const successCountEl = this.container.querySelector('#success-count')
+    const runningCountEl = this.container.querySelector('#running-count')
+    const failedCountEl = this.container.querySelector('#failed-count')
+    
+    if (taskCountEl) {
+      taskCountEl.textContent = taskCount
+      console.log('✅ Updated task count:', taskCount)
+    } else {
+      console.warn('⚠️ Task count element not found')
+    }
+    
+    if (successCountEl) {
+      successCountEl.textContent = successCount
+      console.log('✅ Updated success count:', successCount)
+    } else {
+      console.warn('⚠️ Success count element not found')
+    }
+    
+    if (runningCountEl) {
+      runningCountEl.textContent = runningCount
+      console.log('✅ Updated running count:', runningCount)
+    } else {
+      console.warn('⚠️ Running count element not found')
+    }
+    
+    if (failedCountEl) {
+      failedCountEl.textContent = failedCount
+      console.log('✅ Updated failed count:', failedCount)
+    } else {
+      console.warn('⚠️ Failed count element not found')
+    }
   }
 
   zoom(factor, center = null) {
@@ -776,9 +812,14 @@ export class WorkflowCanvas {
   }
 
   refresh() {
-    console.log('Refreshing Portfolio DAG...')
+    console.log('🔄 Refreshing Portfolio DAG...')
     this.createPortfolioDAG()
     this.centerDAG()
+    // Force stats update after refresh
+    setTimeout(() => {
+      this.updateStats()
+      console.log('📊 Stats forcefully updated after refresh')
+    }, 500)
   }
 
   updateCanvasSize() {
@@ -878,6 +919,7 @@ export class WorkflowCanvas {
     const levels = this.getTaskLevels()
     const maxTasksInLevel = Math.max(...Object.values(levels).map(tasks => tasks.length))
     
+    // Position main tasks first
     Object.entries(levels).forEach(([level, taskIds]) => {
       const levelNum = parseInt(level)
       const tasksInLevel = taskIds.length
@@ -910,6 +952,9 @@ export class WorkflowCanvas {
       })
     })
     
+    // Position task groups below the main tasks
+    this.positionTaskGroupsBelowTasks()
+    
     // Apply final overlap detection and resolution
     this.detectAndResolveOverlapsEnhanced()
     
@@ -917,6 +962,41 @@ export class WorkflowCanvas {
     setTimeout(() => {
       this.redrawConnections()
     }, 100)
+  }
+
+  // New method to position task groups below main tasks
+  positionTaskGroupsBelowTasks() {
+    console.log('📦 Positioning task groups far below main tasks...')
+    
+    // Find the lowest Y position of all tasks
+    const taskPositions = Array.from(this.tasks.values())
+    const maxTaskY = taskPositions.length > 0 ? Math.max(...taskPositions.map(({ y }) => y)) : 0
+    const groupStartY = maxTaskY + 400 // Much more spacing below tasks (increased from 200 to 400)
+    
+    const groupArray = Array.from(this.groups.values())
+    const groupWidth = 280
+    const groupSpacing = 100
+    const startX = 120
+    
+    groupArray.forEach(({ group }, index) => {
+      const x = startX + (index % 3) * (groupWidth + groupSpacing) // 3 groups per row
+      const y = groupStartY + Math.floor(index / 3) * 200 // More vertical spacing between rows (increased from 150 to 200)
+      
+      // Update group data position
+      const groupData = this.groups.get(group.id)
+      if (groupData) {
+        groupData.x = x
+        groupData.y = y
+      }
+      
+      if (group.element) {
+        group.element.style.left = `${x}px`
+        group.element.style.top = `${y}px`
+        group.element.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+      }
+      
+      console.log(`📦 Positioned group "${group.title}" far below at (${x}, ${y})`)
+    })
   }
 
   // Get task levels based on dependencies (topological sort by levels)
