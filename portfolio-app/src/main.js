@@ -1,13 +1,9 @@
 import './style.css'
-import { WorkflowCanvas } from './components/WorkflowCanvas.js'
 import { portfolioData } from './data/portfolio-data.js'
-import { workflowState } from './utils/workflow-state.js'
-import { performanceOptimizer } from './utils/performance.js'
-import { accessibilityManager } from './utils/accessibility.js'
 
-// Initialize the Airflow-inspired portfolio
+// Simplified portfolio initialization
 async function initPortfolio() {
-  console.log('🚀 Starting portfolio initialization...')
+  console.log('🚀 Starting simplified portfolio initialization...')
   
   const app = document.querySelector('#app')
   if (!app) {
@@ -15,224 +11,143 @@ async function initPortfolio() {
     return
   }
 
-  // Don't remove loading screen immediately - keep it until everything is ready
-  console.log('⏸️ Keeping loading screen until initialization complete...')
+  // Remove loading screen immediately since we're doing a simple layout
+  const loadingScreen = document.querySelector('.loading-screen')
+  if (loadingScreen) {
+    console.log('🗑️ Removing loading screen...')
+    loadingScreen.remove()
+  }
 
+  // Simple portfolio layout without complex DAG visualization
   app.innerHTML = `
     <div class="portfolio-container">
       <header class="airflow-header">
         <div class="header-content">
           <h1>${portfolioData.personal.name}</h1>
           <p class="title">${portfolioData.personal.title}</p>
-          <p class="subtitle">Interactive Portfolio DAG</p>
+          <p class="subtitle">Interactive Portfolio</p>
         </div>
         <div class="dag-info">
           <span class="dag-status running">●</span>
-          <span>Portfolio DAG Running</span>
+          <span>Portfolio Active</span>
         </div>
       </header>
       
       <main class="workflow-container">
-        <div id="workflow-canvas" class="canvas-wrapper">
-          <!-- Airflow workflow visualization will be rendered here -->
-        </div>
-        
-        <div class="portfolio-sidebar">
-          <div class="dag-controls">
-            <h3>DAG Controls</h3>
-            <button id="run-dag" class="btn-primary">▶ Run Portfolio DAG</button>
-            <button id="pause-dag" class="btn-secondary">⏸ Pause</button>
-            <button id="refresh-dag" class="btn-secondary">🔄 Refresh</button>
+        <div class="portfolio-content">
+          <div class="portfolio-section">
+            <h2>🎓 Education</h2>
+            ${portfolioData.education.map(edu => `
+              <div class="portfolio-item">
+                <h3>${edu.institution}</h3>
+                <p><strong>${edu.degree}</strong> in ${edu.field}</p>
+                <p><em>${edu.year}</em> | GPA: ${edu.gpa}</p>
+                <p>${edu.details}</p>
+              </div>
+            `).join('')}
           </div>
           
-          <div class="task-legend">
-            <h4>Task Status</h4>
-            <div class="legend-item">
-              <span class="status-dot success"></span>
-              <span>Completed</span>
-            </div>
-            <div class="legend-item">
-              <span class="status-dot running"></span>
-              <span>In Progress</span>
-            </div>
-            <div class="legend-item">
-              <span class="status-dot pending"></span>
-              <span>Pending</span>
-            </div>
-            <div class="legend-item">
-              <span class="status-dot failed"></span>
-              <span>Failed</span>
-            </div>
+          <div class="portfolio-section">
+            <h2>💼 Experience</h2>
+            ${portfolioData.experience.map(exp => `
+              <div class="portfolio-item">
+                <h3>${exp.company}</h3>
+                <p><strong>${exp.position}</strong> | <em>${exp.duration}</em></p>
+                <ul>
+                  ${exp.responsibilities.slice(0, 3).map(resp => `<li>${resp}</li>`).join('')}
+                </ul>
+                <div class="tech-stack">
+                  ${exp.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="portfolio-section">
+            <h2>🔧 Skills</h2>
+            ${Object.values(portfolioData.skills).map(skill => `
+              <div class="portfolio-item">
+                <h3>${skill.category}</h3>
+                <div class="skill-bar">
+                  <div class="skill-progress" style="width: ${skill.proficiency}%"></div>
+                  <span class="skill-percentage">${skill.proficiency}%</span>
+                </div>
+                <div class="skill-items">
+                  ${skill.items.map(item => `<span class="skill-tag">${item}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="portfolio-section">
+            <h2>🚀 Projects</h2>
+            ${portfolioData.projects.map(project => `
+              <div class="portfolio-item">
+                <h3>${project.title}</h3>
+                <p>${project.description}</p>
+                <h4>Key Highlights:</h4>
+                <ul>
+                  ${project.highlights.map(highlight => `<li>${highlight}</li>`).join('')}
+                </ul>
+                <div class="tech-stack">
+                  ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="portfolio-actions">
+            <button id="enable-dag" class="btn-primary">🎯 Enable DAG Visualization</button>
           </div>
         </div>
       </main>
       
       <footer class="portfolio-footer">
-        <p>Built with Airflow-inspired DAG visualization | ${new Date().getFullYear()}</p>
+        <p>Portfolio © ${new Date().getFullYear()} | <a href="mailto:${portfolioData.personal.email}">${portfolioData.personal.email}</a></p>
       </footer>
     </div>
   `
 
-  // Initialize the workflow canvas
-  try {
-    console.log('🎯 Initializing workflow canvas...')
-    await initWorkflowCanvas()
-    console.log('✅ Portfolio initialization complete!')
+  // Add event listener for DAG visualization
+  document.getElementById('enable-dag')?.addEventListener('click', async () => {
+    const button = document.getElementById('enable-dag')
+    button.textContent = '⏳ Loading DAG...'
+    button.disabled = true
     
-    // Now remove loading screen after successful initialization
-    const loadingScreen = document.querySelector('.loading-screen')
-    if (loadingScreen) {
-      console.log('🗑️ Removing loading screen after successful initialization...')
-      loadingScreen.remove()
-    }
-  } catch (error) {
-    console.error('❌ Failed to initialize workflow canvas:', error)
-    
-    // Remove loading screen and show error
-    const loadingScreen = document.querySelector('.loading-screen')
-    if (loadingScreen) {
-      loadingScreen.remove()
-    }
-    
-    showError(error)
-  }
-}
-
-async function initWorkflowCanvas() {
-  console.log('🎯 Starting workflow canvas initialization...')
-  
-  // Ensure the canvas container exists
-  const canvasContainer = document.getElementById('workflow-canvas')
-  if (!canvasContainer) {
-    throw new Error('Workflow canvas container not found')
-  }
-  
-  console.log('📦 Creating WorkflowCanvas...')
-  
-  try {
-    const canvas = new WorkflowCanvas('workflow-canvas')
-
-    if (!canvas) {
-      throw new Error('Failed to create WorkflowCanvas instance')
-    }
-
-    console.log('🎨 WorkflowCanvas created successfully')
-    
-    // Initialize performance optimization if available
     try {
-      if (performanceOptimizer && typeof performanceOptimizer.optimizeCanvas === 'function') {
-        if (canvas.canvas && canvas.context) {
-          performanceOptimizer.optimizeCanvas(canvas.canvas, canvas.context)
-          console.log('⚡ Performance optimization applied')
-        }
-      }
-    } catch (perfError) {
-      console.warn('⚠️ Performance optimization failed:', perfError)
+      await enableDagVisualization()
+      button.textContent = '✅ DAG Enabled'
+    } catch (error) {
+      console.error('DAG visualization failed:', error)
+      button.textContent = '❌ DAG Failed - Click to Retry'
+      button.disabled = false
     }
-
-    // Create the portfolio DAG
-    console.log('🏗️ Creating portfolio DAG...')
-    await canvas.createPortfolioDAG()
-    console.log('✅ Portfolio DAG created successfully!')
-
-    // Setup control buttons
-    setupDagControls(canvas)
-
-    // Initialize workflow state
-    if (workflowState && typeof workflowState.loadState === 'function') {
-      workflowState.loadState()
-    }
-    
-    console.log('✅ Workflow Canvas initialized successfully!')
-    
-  } catch (canvasError) {
-    console.error('❌ Canvas initialization failed:', canvasError)
-    
-    // Fallback: Show a simple portfolio layout without canvas
-    canvasContainer.innerHTML = `
-      <div class="fallback-portfolio">
-        <div class="fallback-header">
-          <h2>📊 Dan Vo - Data Engineer Portfolio</h2>
-          <p>Portfolio visualization temporarily unavailable - showing simplified view</p>
-        </div>
-        
-        <div class="fallback-sections">
-          <div class="fallback-section">
-            <h3>🎓 Education</h3>
-            <p>HCM University of Science - Bachelor IT (7.3/10 GPA)</p>
-          </div>
-          
-          <div class="fallback-section">
-            <h3>💼 Experience</h3>
-            <p>4+ years: MoMo (Current), Amanotes, FPT Software, ACB</p>
-          </div>
-          
-          <div class="fallback-section">
-            <h3>🔧 Skills</h3>
-            <p>Python, Spark, Airflow, K8S, ClickHouse, GCP</p>
-          </div>
-          
-          <div class="fallback-section">
-            <h3>🚀 Projects</h3>
-            <p>Airflow on K8S, Spark Ingestion, Real-time Analytics, Lakehouse</p>
-          </div>
-        </div>
-        
-        <div class="fallback-footer">
-          <button onclick="location.reload()" class="btn-primary">🔄 Retry Full Portfolio</button>
-        </div>
-      </div>
-    `
-    
-    // Still throw the error so we can handle it in the calling function
-    throw new Error(`Canvas initialization failed: ${canvasError.message}`)
-  }
-}
-
-function showError(error) {
-  console.error('❌ Portfolio error:', error)
+  })
   
-  const canvasContainer = document.getElementById('workflow-canvas')
-  if (canvasContainer) {
-    canvasContainer.innerHTML = `
-      <div class="error-message" style="text-align: center; padding: 40px; color: #dc2626;">
-        <h3>Error Loading Portfolio</h3>
-        <p>There was an issue loading the portfolio visualization.</p>
-        <p><strong>Error:</strong> ${error.message}</p>
-        <button onclick="location.reload()" class="btn-primary" style="margin-top: 20px;">Retry</button>
-      </div>
-    `
-  }
+  console.log('✅ Simplified portfolio loaded successfully!')
 }
 
-function setupDagControls(canvas) {
-  const runBtn = document.getElementById('run-dag')
-  const pauseBtn = document.getElementById('pause-dag')
-  const refreshBtn = document.getElementById('refresh-dag')
-
-  runBtn?.addEventListener('click', () => {
-    console.log('Running Portfolio DAG...')
-    runBtn.textContent = '⏳ Running...'
-    runBtn.disabled = true
-
-    // Simulate DAG execution
-    setTimeout(() => {
-      runBtn.textContent = '✅ Completed'
-      setTimeout(() => {
-        runBtn.textContent = '▶ Run Portfolio DAG'
-        runBtn.disabled = false
-      }, 2000)
-    }, 3000)
-  })
-
-  pauseBtn?.addEventListener('click', () => {
-    console.log('Pausing Portfolio DAG...')
-  })
-
-  refreshBtn?.addEventListener('click', () => {
-    console.log('Refreshing Portfolio DAG...')
-    canvas.refresh()
-  })
+async function enableDagVisualization() {
+  console.log('🎯 Attempting to load DAG visualization...')
+  
+  try {
+    const { WorkflowCanvas } = await import('./components/WorkflowCanvas.js')
+    
+    const portfolioContent = document.querySelector('.portfolio-content')
+    portfolioContent.innerHTML = `
+      <div id="workflow-canvas" class="canvas-wrapper">
+        <!-- DAG will be rendered here -->
+      </div>
+    `
+    
+    const canvas = new WorkflowCanvas('workflow-canvas')
+    await canvas.createPortfolioDAG()
+    
+    console.log('✅ DAG visualization enabled successfully')
+  } catch (error) {
+    console.error('❌ Failed to enable DAG visualization:', error)
+    throw error
+  }
 }
 
 // Initialize when DOM is ready

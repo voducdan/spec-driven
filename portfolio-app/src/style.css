@@ -527,6 +527,123 @@ body {
   background: #0066cc;
 }
 
+/* Simplified Portfolio Layout */
+.portfolio-content {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.portfolio-section {
+  margin-bottom: 3rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.portfolio-section h2 {
+  background: linear-gradient(135deg, #017cee 0%, #1e3a8a 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.portfolio-item {
+  padding: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.portfolio-item:last-child {
+  border-bottom: none;
+}
+
+.portfolio-item h3 {
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.portfolio-item h4 {
+  color: #374151;
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1rem;
+}
+
+.portfolio-item p {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.portfolio-item ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.portfolio-item li {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 0.25rem;
+}
+
+.tech-stack, .skill-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.tech-tag, .skill-tag {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+}
+
+.skill-bar {
+  position: relative;
+  background: #f3f4f6;
+  border-radius: 6px;
+  height: 24px;
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+
+.skill-progress {
+  background: linear-gradient(90deg, #10b981, #059669);
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.skill-percentage {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.portfolio-actions {
+  text-align: center;
+  padding: 2rem;
+}
+
+.portfolio-actions .btn-primary {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  min-width: 200px;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .workflow-container {
