@@ -12,6 +12,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: undefined,
+        // Force everything into a single bundle for GitHub Pages compatibility
+        inlineDynamicImports: true,
       },
     },
   },

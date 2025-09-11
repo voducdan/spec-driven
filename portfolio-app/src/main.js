@@ -1,4 +1,7 @@
 import './style.css'
+// Use static imports for better GitHub Pages compatibility
+import { WorkflowCanvas } from './components/WorkflowCanvas.js'
+import { portfolioData } from './data/portfolio-data.js'
 
 // Add global error handling with detailed logging
 window.addEventListener('error', (e) => {
@@ -15,25 +18,20 @@ window.addEventListener('unhandledrejection', (e) => {
   showErrorMessage('Loading Error', 'Failed to load portfolio components')
 })
 
-// Import components with error handling
-let WorkflowCanvas, portfolioData
-
+// Components are now loaded via static imports
 async function loadComponents() {
   try {
-    console.log('🔄 Loading portfolio components...')
+    console.log('🔄 Verifying portfolio components...')
     
-    const [canvasModule, dataModule] = await Promise.all([
-      import('./components/WorkflowCanvas.js'),
-      import('./data/portfolio-data.js')
-    ])
+    // Verify components are loaded
+    if (!WorkflowCanvas || !portfolioData) {
+      throw new Error('Components not properly imported')
+    }
     
-    WorkflowCanvas = canvasModule.WorkflowCanvas
-    portfolioData = dataModule.portfolioData
-    
-    console.log('✅ Components loaded successfully')
+    console.log('✅ Components verified successfully')
     return true
   } catch (error) {
-    console.error('❌ Failed to load components:', error)
+    console.error('❌ Failed to verify components:', error)
     showErrorMessage('Component Loading Error', `Failed to load portfolio components: ${error.message}`)
     return false
   }
