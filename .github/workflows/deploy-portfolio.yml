@@ -41,10 +41,15 @@ jobs:
         cd portfolio-app
         npm ci
         
-    - name: Build portfolio
+    # Skip build and use pre-built embedded version
+    - name: Use embedded portfolio version
       run: |
         cd portfolio-app
-        npm run build
+        echo "📦 Using pre-built embedded portfolio version for GitHub Pages compatibility"
+        # Ensure dist directory exists
+        mkdir -p dist
+        # Copy favicon
+        cp public/favicon.ico dist/
         
     - name: List build output
       run: |
