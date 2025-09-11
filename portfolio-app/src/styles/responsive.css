@@ -4,6 +4,53 @@
 
 /* Base Mobile Styles (320px and up) */
 @media (max-width: 480px) {
+  /* DAG Header Responsive Adjustments */
+  .dag-header {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .dag-status-container {
+    margin: 0;
+  }
+  
+  .dag-status-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    max-width: 100%;
+  }
+  
+  .status-card {
+    padding: 0.5rem;
+    min-width: auto;
+  }
+  
+  .status-icon {
+    font-size: 1rem;
+  }
+  
+  .status-label {
+    font-size: 0.65rem;
+  }
+  
+  .status-value {
+    font-size: 1rem;
+  }
+  
+  .dag-title h1 {
+    font-size: 1.5rem;
+  }
+  
+  .dag-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .dag-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
   /* Header Adjustments */
   .airflow-header {
     padding: 1rem;
@@ -163,6 +210,43 @@
 
 /* Tablet Portrait (481px to 768px) */
 @media (min-width: 481px) and (max-width: 768px) {
+  /* DAG Header Tablet Styles */
+  .dag-header {
+    flex-direction: column;
+    padding: 1.2rem;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .dag-status-container {
+    margin: 0;
+  }
+  
+  .dag-status-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    max-width: 500px;
+  }
+  
+  .status-card {
+    padding: 0.6rem;
+  }
+  
+  .dag-title h1 {
+    font-size: 1.8rem;
+  }
+  
+  .dag-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .airflow-header {
+    padding: 1.2rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
   .airflow-header {
     padding: 1.2rem;
     flex-direction: column;
