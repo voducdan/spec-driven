@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/spec-driven/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dan Vo - Data Engineer Portfolio | Airflow DAG</title>
     <meta
@@ -18,8 +18,8 @@
         </marker>
       </defs>
     </svg>
-    <script type="module" crossorigin src="/assets/index-DvPeikWj.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BqGcJpY8.css">
+    <script type="module" crossorigin src="/spec-driven/assets/index-9A_XJIrS.js"></script>
+    <link rel="stylesheet" crossorigin href="/spec-driven/assets/index-BS3O8DkM.css">
   </head>
   <body>
     <div id="app">
@@ -34,6 +34,39 @@
         </div>
       </div>
     </div>
+    
+    <!-- Fallback script to remove loading screen if JavaScript fails -->
+    <script>
+      // Emergency fallback to remove loading screen after 10 seconds
+      setTimeout(function() {
+        var loadingScreen = document.querySelector('.loading-screen');
+        if (loadingScreen) {
+          console.log('🚨 Emergency removal of loading screen after 10 seconds');
+          loadingScreen.style.display = 'none';
+          if (loadingScreen.parentNode) {
+            loadingScreen.parentNode.removeChild(loadingScreen);
+          }
+        }
+      }, 10000);
+      
+      // Also try to catch any unhandled errors
+      window.addEventListener('error', function(e) {
+        console.error('🚨 Global error caught:', e.error);
+        var loadingScreen = document.querySelector('.loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.display = 'none';
+          if (loadingScreen.parentNode) {
+            loadingScreen.parentNode.removeChild(loadingScreen);
+          }
+          
+          // Show error message
+          var errorDiv = document.createElement('div');
+          errorDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10000; max-width: 500px; text-align: center;';
+          errorDiv.innerHTML = '<h3 style="color: #dc2626; margin-top: 0;">Portfolio Loading Error</h3><p>There was a JavaScript error. Please check the console and refresh the page.</p><button onclick="location.reload()" style="background: #017cee; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Reload Page</button>';
+          document.body.appendChild(errorDiv);
+        }
+      });
+    </script>
 
     <style>
       .loading-screen {
