@@ -5,7 +5,15 @@ import { portfolioData } from '../data/portfolio-data.js'
 
 export class WorkflowCanvas {
   constructor(containerId) {
+    console.log(`🎨 WorkflowCanvas constructor called with containerId: ${containerId}`)
+    
     this.container = document.getElementById(containerId)
+    if (!this.container) {
+      console.error(`❌ Container with id '${containerId}' not found in DOM`)
+      throw new Error(`Container element '${containerId}' not found`)
+    }
+    
+    console.log('✅ Container found, initializing properties...')
     this.tasks = new Map()
     this.groups = new Map()
     this.connections = []
@@ -17,15 +25,22 @@ export class WorkflowCanvas {
     this.selectedTask = null
     this.animationQueue = []
     this.isAnimating = false
+    
+    console.log('🚀 Calling init method...')
     this.init()
+    console.log('✅ WorkflowCanvas constructor completed successfully')
   }
 
   init() {
+    console.log('🎯 WorkflowCanvas init() method started')
+    
     if (!this.container) {
-      console.error('Canvas container not found')
-      return
+      const error = 'Canvas container not found in init()'
+      console.error('❌', error)
+      throw new Error(error)
     }
 
+    console.log('📝 Setting container innerHTML...')
     this.container.innerHTML = `
       <div class="workflow-toolbar">
         <div class="toolbar-section">
@@ -117,14 +132,32 @@ export class WorkflowCanvas {
       </div>
     `
 
+    console.log('🔍 Querying DOM elements...')
     this.canvas = this.container.querySelector('#canvas')
     this.connectionsLayer = this.container.querySelector('.connections-layer')
     this.tasksLayer = this.container.querySelector('.tasks-layer')
     this.sidebar = this.container.querySelector('#sidebar')
     this.sidebarContent = this.container.querySelector('#sidebar-content')
 
+    // Verify all critical elements are found
+    if (!this.canvas) {
+      throw new Error('Canvas element not found after DOM update')
+    }
+    if (!this.connectionsLayer) {
+      throw new Error('Connections layer not found after DOM update')
+    }
+    if (!this.tasksLayer) {
+      throw new Error('Tasks layer not found after DOM update')
+    }
+    
+    console.log('✅ All DOM elements found successfully')
+    console.log('🎧 Setting up event listeners...')
     this.setupEventListeners()
+    
+    console.log('🖱️ Setting up pan and zoom...')
     this.setupPanAndZoom()
+    
+    console.log('✅ WorkflowCanvas init() completed successfully')
   }
 
   setupEventListeners() {

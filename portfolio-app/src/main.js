@@ -15,12 +15,8 @@ async function initPortfolio() {
     return
   }
 
-  // Remove loading screen immediately
-  const loadingScreen = document.querySelector('.loading-screen')
-  if (loadingScreen) {
-    console.log('🗑️ Removing loading screen...')
-    loadingScreen.remove()
-  }
+  // Don't remove loading screen immediately - keep it until everything is ready
+  console.log('⏸️ Keeping loading screen until initialization complete...')
 
   app.innerHTML = `
     <div class="portfolio-container">
@@ -82,8 +78,22 @@ async function initPortfolio() {
     console.log('🎯 Initializing workflow canvas...')
     await initWorkflowCanvas()
     console.log('✅ Portfolio initialization complete!')
+    
+    // Now remove loading screen after successful initialization
+    const loadingScreen = document.querySelector('.loading-screen')
+    if (loadingScreen) {
+      console.log('🗑️ Removing loading screen after successful initialization...')
+      loadingScreen.remove()
+    }
   } catch (error) {
     console.error('❌ Failed to initialize workflow canvas:', error)
+    
+    // Remove loading screen and show error
+    const loadingScreen = document.querySelector('.loading-screen')
+    if (loadingScreen) {
+      loadingScreen.remove()
+    }
+    
     showError(error)
   }
 }
