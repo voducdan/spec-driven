@@ -1,0 +1,423 @@
+/* Airflow-Inspired Theme Styles */
+
+/* Color Variables */
+:root {
+  --airflow-blue: #017cee;
+  --airflow-dark: #1e3a8a;
+  --airflow-light: #f0f9ff;
+  --airflow-gray: #6b7280;
+  --task-success: #10b981;
+  --task-failed: #ef4444;
+  --task-running: #f59e0b;
+  --task-pending: #6b7280;
+  --task-skipped: #8b5cf6;
+  --background: #fafbfc;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+/* Airflow-Inspired Header */
+.airflow-header {
+  background: linear-gradient(135deg, var(--airflow-blue) 0%, var(--airflow-dark) 100%);
+  color: white;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-content h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.header-content .title {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin-bottom: 0.25rem;
+}
+
+.header-content .subtitle {
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
+.dag-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.dag-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.dag-status.running {
+  background-color: var(--task-running);
+}
+
+/* DAG Controls Styling */
+.dag-controls {
+  margin-bottom: 2rem;
+}
+
+.dag-controls h3 {
+  color: var(--airflow-dark);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: var(--airflow-blue);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--airflow-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--airflow-dark);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--airflow-light);
+  border-color: var(--airflow-blue);
+}
+
+.btn-primary:disabled {
+  background: var(--task-pending);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Task Status Legend */
+.task-legend h4 {
+  color: var(--airflow-dark);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.status-dot.success {
+  background-color: var(--task-success);
+}
+
+.status-dot.running {
+  background-color: var(--task-running);
+  animation: pulse 2s infinite;
+}
+
+.status-dot.pending {
+  background-color: var(--task-pending);
+}
+
+.status-dot.failed {
+  background-color: var(--task-failed);
+}
+
+/* Workflow Toolbar */
+.workflow-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--airflow-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.workflow-toolbar button {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.workflow-toolbar button:hover {
+  background: var(--airflow-light);
+  border-color: var(--airflow-blue);
+}
+
+/* Task Node Styling */
+.task-node {
+  position: absolute;
+  width: 200px;
+  min-height: 60px;
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.task-node.status-success {
+  border-color: var(--task-success);
+  background: linear-gradient(135deg, white 0%, #f0fdf4 100%);
+}
+
+.task-node.status-running {
+  border-color: var(--task-running);
+  background: linear-gradient(135deg, white 0%, #fffbeb 100%);
+  animation: runningPulse 2s infinite;
+}
+
+.task-node.status-pending {
+  border-color: var(--task-pending);
+  background: linear-gradient(135deg, white 0%, #f9fafb 100%);
+}
+
+.task-node.status-failed {
+  border-color: var(--task-failed);
+  background: linear-gradient(135deg, white 0%, #fef2f2 100%);
+}
+
+@keyframes runningPulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+  }
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.task-icon {
+  font-size: 1.2rem;
+}
+
+.task-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.task-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* Task Groups */
+.task-group {
+  position: absolute;
+  border: 2px dashed var(--airflow-blue);
+  border-radius: 12px;
+  background: rgba(1, 124, 238, 0.02);
+  padding: 1rem;
+  min-width: 250px;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.expand-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--airflow-blue);
+}
+
+.group-title {
+  font-weight: 600;
+  color: var(--airflow-dark);
+}
+
+.task-count {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.group-content {
+  position: relative;
+}
+
+.task-group.collapsed .group-content {
+  display: none;
+}
+
+/* Task Connections */
+.task-connection {
+  stroke: var(--airflow-blue);
+  stroke-width: 2;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+
+/* Portfolio Footer */
+.portfolio-footer {
+  background: var(--airflow-light);
+  padding: 1rem 2rem;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Portfolio Sections */
+.portfolio-section {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.portfolio-section:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.section-header {
+  border-bottom: 2px solid var(--airflow-blue);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--airflow-dark);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.section-icon {
+  font-size: 1.5rem;
+}
+
+.task-status-badge {
+  margin-left: auto;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-status-badge.status-success {
+  background: var(--airflow-light);
+  color: var(--task-success);
+}
+
+.task-status-badge.status-running {
+  background: #fffbeb;
+  color: var(--task-running);
+}
+
+.task-status-badge.status-pending {
+  background: #f9fafb;
+  color: var(--task-pending);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-content {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Workflow Canvas Grid Pattern */
+.workflow-canvas {
+  background:
+    radial-gradient(circle at 20px 20px, var(--border-color) 1px, transparent 1px),
+    radial-gradient(circle at 60px 60px, var(--border-color) 1px, transparent 1px);
+  background-size:
+    40px 40px,
+    80px 80px;
+}
