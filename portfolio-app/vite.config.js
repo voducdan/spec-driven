@@ -9,11 +9,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    target: 'es2015', // Use more compatible ES2015 target
     rollupOptions: {
       output: {
         manualChunks: undefined,
         // Force everything into a single bundle for GitHub Pages compatibility
         inlineDynamicImports: true,
+        format: 'es', // Use ES modules but more compatible
       },
     },
   },
