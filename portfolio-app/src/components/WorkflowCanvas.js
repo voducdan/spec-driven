@@ -84,6 +84,7 @@ export class WorkflowCanvas {
         <div class="toolbar-section">
           <button id="layout-horizontal" title="Horizontal Layout">⟷</button>
           <button id="layout-vertical" title="Vertical Layout">↕</button>
+          <button id="auto-layout" title="Auto Layout (Prevent Overlaps)">🎯</button>
           <button id="toggle-groups" title="Toggle Groups">📂</button>
           <button id="refresh-dag" title="Refresh">🔄</button>
         </div>
@@ -186,6 +187,7 @@ export class WorkflowCanvas {
     // Layout controls
     this.container.querySelector('#layout-horizontal')?.addEventListener('click', () => this.setLayout('horizontal'))
     this.container.querySelector('#layout-vertical')?.addEventListener('click', () => this.setLayout('vertical'))
+    this.container.querySelector('#auto-layout')?.addEventListener('click', () => this.autoLayoutTasks())
     this.container.querySelector('#toggle-groups')?.addEventListener('click', () => this.toggleGroups())
     this.container.querySelector('#refresh-dag')?.addEventListener('click', () => this.refresh())
     
@@ -459,10 +461,10 @@ export class WorkflowCanvas {
         
         console.log('✅ Portfolio DAG created successfully!')
         
-        // Center the DAG and fit to screen
+        // Auto-layout tasks to prevent overlaps and center the DAG
         setTimeout(() => {
+          this.autoLayoutTasks()
           this.centerDAG()
-          this.fitToScreen()
           resolve()
         }, 200)
         
@@ -764,6 +766,120 @@ export class WorkflowCanvas {
     if (this.connections.length > 0) {
       this.redrawConnections()
     }
+  }
+
+  // Helper method to detect and resolve task overlaps
+  detectAndResolveOverlaps() {
+    const taskArray = Array.from(this.tasks.values())
+    const taskWidth = 200
+    const taskHeight = 120
+    const minSpacing = 50
+    
+    for (let i = 0; i < taskArray.length; i++) {
+      for (let j = i + 1; j < taskArray.length; j++) {
+        const task1 = taskArray[i]
+        const task2 = taskArray[j]
+        
+        // Check if tasks overlap
+        const xOverlap = Math.abs(task1.x - task2.x) < (taskWidth + minSpacing)
+        const yOverlap = Math.abs(task1.y - task2.y) < (taskHeight + minSpacing)
+        
+        if (xOverlap && yOverlap) {
+          console.warn(`⚠️ Overlap detected between "${task1.task.title}" and "${task2.task.title}"`)
+          
+          // Resolve overlap by moving the second task
+          if (task2.x <= task1.x) {
+            task2.x = task1.x - (taskWidth + minSpacing)
+          } else {
+            task2.x = task1.x + (taskWidth + minSpacing)
+          }
+          
+          // Update the task element position
+          task2.task.element.style.left = `${task2.x}px`
+          console.log(`📍 Moved "${task2.task.title}" to avoid overlap: (${task2.x}, ${task2.y})`)
+        }
+      }
+    }
+  }
+
+  // Improved method to auto-layout tasks to prevent overlaps
+  autoLayoutTasks() {
+    console.log('🎨 Auto-layouting tasks to prevent overlaps...')
+    
+    const taskArray = Array.from(this.tasks.values())
+    const taskWidth = 220 // 200px + padding
+    const taskHeight = 140 // approximate height + padding
+    const startX = 150
+    const startY = 150
+    
+    // Group tasks by their dependency level (topological layers)
+    const levels = this.getTaskLevels()
+    
+    Object.entries(levels).forEach(([level, taskIds]) => {
+      const levelNum = parseInt(level)
+      const tasksInLevel = taskIds.length
+      
+      taskIds.forEach((taskId, index) => {
+        const taskData = this.tasks.get(taskId)
+        if (taskData) {
+          // Calculate position based on level and index within level
+          const x = startX + (levelNum * (taskWidth + 50))
+          const y = startY + (index * (taskHeight + 30)) - ((tasksInLevel - 1) * (taskHeight + 30) / 2)
+          
+          // Update task position
+          taskData.x = x
+          taskData.y = Math.max(50, y) // Ensure minimum Y position
+          
+          if (taskData.task.element) {
+            taskData.task.element.style.left = `${x}px`
+            taskData.task.element.style.top = `${Math.max(50, y)}px`
+          }
+          
+          console.log(`📍 Positioned "${taskData.task.title}" at level ${levelNum}: (${x}, ${Math.max(50, y)})`)
+        }
+      })
+    })
+    
+    // Redraw connections after repositioning
+    this.redrawConnections()
+  }
+
+  // Get task levels based on dependencies (topological sort by levels)
+  getTaskLevels() {
+    const levels = {}
+    const visited = new Set()
+    
+    const getLevel = (taskId) => {
+      if (visited.has(taskId)) {
+        return levels[taskId] || 0
+      }
+      
+      visited.add(taskId)
+      const taskData = this.tasks.get(taskId)
+      
+      if (!taskData || !taskData.task.dependencies || taskData.task.dependencies.length === 0) {
+        levels[taskId] = 0
+        return 0
+      }
+      
+      const maxDepLevel = Math.max(...taskData.task.dependencies.map(depId => getLevel(depId)))
+      levels[taskId] = maxDepLevel + 1
+      return maxDepLevel + 1
+    }
+    
+    // Calculate levels for all tasks
+    this.tasks.forEach((_, taskId) => getLevel(taskId))
+    
+    // Group tasks by level
+    const levelGroups = {}
+    Object.entries(levels).forEach(([taskId, level]) => {
+      if (!levelGroups[level]) {
+        levelGroups[level] = []
+      }
+      levelGroups[level].push(taskId)
+    })
+    
+    return levelGroups
   }
 }
 
