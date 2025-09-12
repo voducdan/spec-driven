@@ -31,6 +31,7 @@ export class TaskNode {
     node.style.left = `${x}px`
     node.style.top = `${y}px`
     node.style.transform = 'scale(0)'
+    node.style.transformOrigin = 'top left'
     node.style.transition = `all ${this.animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
 
     node.innerHTML = `
@@ -301,6 +302,9 @@ export class TaskNode {
   applyTransform() {
     if (this.element) {
       const finalScale = this.scale * this.hoverScale
+      // Set transform origin to top-left to prevent position shifts during scaling
+      this.element.style.transformOrigin = 'top left'
+      // Apply only scale transform since we removed CSS translateY conflicts
       this.element.style.transform = `scale(${finalScale})`
     }
   }

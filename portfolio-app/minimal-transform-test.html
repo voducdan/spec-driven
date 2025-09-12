@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Transform Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+        
+        .tasks-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: auto;
+            padding: 50px;
+            min-width: 200vw;
+            min-height: 200vh;
+        }
+        
+        .task-item {
+            position: absolute;
+            width: 240px;
+            height: 150px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.1s ease;
+            transform-origin: top left !important;
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 350px;
+            z-index: 1000;
+        }
+        
+        .scroll-info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tasks-layer" id="tasksLayer">
+            <!-- Tasks will be added here -->
+        </div>
+    </div>
+    
+    <div class="scroll-info" id="scrollInfo">
+        <div><strong>Scroll Position Test</strong></div>
+        <div>Scroll: (0, 0)</div>
+        <div>Center: (0, 0)</div>
+    </div>
+    
+    <div class="debug-info" id="debugInfo">
+        <div><strong>Position Tracking</strong></div>
+        <div id="debugContent">Ready to track positions...</div>
+    </div>
+
+    <script>
+        const tasksLayer = document.getElementById('tasksLayer');
+        const scrollInfo = document.getElementById('scrollInfo');
+        const debugContent = document.getElementById('debugContent');
+        
+        // Task data with fixed positions (like WorkflowCanvas stores)
+        const taskData = [
+            { id: 'task1', title: 'Education Data', x: 150, y: 150 },
+            { id: 'task2', title: 'Experience Flow', x: 470, y: 200 },
+            { id: 'task3', title: 'Skills Analysis', x: 790, y: 150 },
+            { id: 'task4', title: 'Projects Build', x: 310, y: 380 },
+            { id: 'task5', title: 'Certifications', x: 630, y: 350 }
+        ];
+        
+        const tasks = new Map();
+        
+        // Create task elements (similar to TaskNode.render)
+        taskData.forEach(data => {
+            const element = document.createElement('div');
+            element.className = 'task-item';
+            element.id = data.id;
+            element.style.left = data.x + 'px';
+            element.style.top = data.y + 'px';
+            element.innerHTML = `
+                <div>${data.title}</div>
+                <div style="font-size: 0.8em; margin-top: 5px;">
+                    Position: (${data.x}, ${data.y})
+                </div>
+            `;
+            
+            tasksLayer.appendChild(element);
+            
+            // Store task data (similar to WorkflowCanvas.tasks Map)
+            tasks.set(data.id, {
+                element: element,
+                x: data.x,
+                y: data.y,
+                title: data.title,
+                scale: 1
+            });
+        });
+        
+        // Center the view initially
+        setTimeout(() => {
+            const centerX = 500;
+            const centerY = 300;
+            tasksLayer.scrollTo(
+                centerX - tasksLayer.clientWidth / 2,
+                centerY - tasksLayer.clientHeight / 2
+            );
+        }, 100);
+        
+        // Scroll-based scaling (exact same logic as WorkflowCanvas.handleScroll)
+        tasksLayer.addEventListener('scroll', () => {
+            const scrollLeft = tasksLayer.scrollLeft;
+            const scrollTop = tasksLayer.scrollTop;
+            const viewportWidth = tasksLayer.clientWidth;
+            const viewportHeight = tasksLayer.clientHeight;
+            const viewportCenterX = scrollLeft + viewportWidth / 2;
+            const viewportCenterY = scrollTop + viewportHeight / 2;
+            
+            // Update scroll info
+            scrollInfo.innerHTML = `
+                <div><strong>Scroll Position Test</strong></div>
+                <div>Scroll: (${scrollLeft}, ${scrollTop})</div>
+                <div>Center: (${viewportCenterX.toFixed(0)}, ${viewportCenterY.toFixed(0)})</div>
+            `;
+            
+            const maxDistance = Math.min(viewportHeight, viewportWidth) / 2;
+            const minScale = 0.5;
+            const centerScale = 1.4;
+            const taskWidth = 240;
+            const taskHeight = 150;
+            
+            let debugText = '';
+            
+            tasks.forEach((taskData, taskId) => {
+                // Use STORED coordinates (like WorkflowCanvas does)
+                const taskCenterX = taskData.x + taskWidth / 2;
+                const taskCenterY = taskData.y + taskHeight / 2;
+                
+                const distanceX = Math.abs(viewportCenterX - taskCenterX);
+                const distanceY = Math.abs(viewportCenterY - taskCenterY);
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                
+                let scale;
+                if (distance <= maxDistance / 4) {
+                    scale = centerScale;
+                } else if (distance >= maxDistance) {
+                    scale = minScale;
+                } else {
+                    const normalizedDistance = (distance - maxDistance / 4) / (maxDistance - maxDistance / 4);
+                    scale = centerScale - normalizedDistance * (centerScale - minScale);
+                }
+                
+                // Apply transform with top-left origin
+                taskData.element.style.transform = `scale(${scale})`;
+                taskData.scale = scale;
+                
+                // Check position consistency for first task
+                if (taskId === 'task1') {
+                    const rect = taskData.element.getBoundingClientRect();
+                    const layerRect = tasksLayer.getBoundingClientRect();
+                    const actualX = rect.left - layerRect.left + scrollLeft;
+                    const actualY = rect.top - layerRect.top + scrollTop;
+                    
+                    debugText = `
+                        <div><strong>Position Tracking (Task 1)</strong></div>
+                        <div>Stored: (${taskData.x}, ${taskData.y})</div>
+                        <div>Actual: (${actualX.toFixed(1)}, ${actualY.toFixed(1)})</div>
+                        <div>Diff: (${(actualX - taskData.x).toFixed(1)}, ${(actualY - taskData.y).toFixed(1)})</div>
+                        <div>Scale: ${scale.toFixed(2)}</div>
+                        <div>Distance: ${distance.toFixed(1)}</div>
+                    `;
+                }
+            });
+            
+            debugContent.innerHTML = debugText;
+        }, { passive: true });
+    </script>
+</body>
+</html>

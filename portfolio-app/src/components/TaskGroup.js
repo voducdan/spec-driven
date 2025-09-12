@@ -28,6 +28,7 @@ export class TaskGroup {
     group.id = `group-${this.id}`
     group.style.left = `${x}px`
     group.style.top = `${y}px`
+    group.style.transformOrigin = 'top left'
     group.style.transition = `all ${this.animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
 
     const progress = this.getProgress()

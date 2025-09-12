@@ -396,8 +396,12 @@
 
   /* Enhanced hover effects for larger screens */
   .task-node:hover {
-    transform: translateY(-3px) scale(1.02);
+    /* Remove transform to avoid conflicts with scroll-based scaling */
+    /* transform: translateY(-3px) scale(1.02); */
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    /* Use margin-top instead of transform for hover lift effect */
+    margin-top: -3px;
+    margin-bottom: 3px;
   }
 
   .task-group:hover {

@@ -28,6 +28,9 @@ export class WorkflowCanvas {
     this.selectedTask = null
     this.animationQueue = []
     this.isAnimating = false
+    this.isPanning = false
+    this.draggedTask = null
+    this.dragOffset = { x: 0, y: 0 }
     
     // Handle window resize
     this.handleResize = () => {
@@ -50,6 +53,10 @@ export class WorkflowCanvas {
       console.error('❌', error)
       throw new Error(error)
     }
+
+    // Create debug overlay for scroll tracking
+    this.createDebugOverlay()
+    this.positionMismatches = 0
 
     console.log('📝 Setting container innerHTML...')
     this.container.innerHTML = `
@@ -192,104 +199,97 @@ export class WorkflowCanvas {
     // Enhanced scroll handling for smooth scaling
     const tasksLayer = this.tasksLayer || this.container.querySelector('.tasks-layer')
     if (tasksLayer) {
-      tasksLayer.addEventListener('scroll', () => this.handleScroll(), { passive: true })
-      console.log('✅ Enhanced scroll listener attached to tasks layer')
+      tasksLayer.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false })
+      console.log('✅ Enhanced wheel listener for zoom attached to tasks layer')
     } else {
       // Fallback to canvas scroll
-      this.canvas.addEventListener('scroll', () => this.handleScroll(), { passive: true })
-      console.log('✅ Fallback scroll listener attached to canvas')
+      this.canvas.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false })
+      console.log('✅ Fallback wheel listener for zoom attached to canvas')
     }
   }
 
   setupPanAndZoom() {
-    // Disable pan functionality to prevent conflicts with scroll-based scaling
-    // The scroll-based individual component scaling provides the interactive experience
-    
-    // Enable natural scrolling without zoom conflicts
-    // The scroll events will be handled by the tasks layer scroll listener
+    this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+    this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+    this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+    this.canvas.addEventListener('mouseleave', (e) => this.handleMouseUp(e)); // End drag if mouse leaves canvas
   }
 
-  handleScroll() {
-    if (!this.canvas) return
+  handleMouseDown(event) {
+    const target = event.target.closest('.task-node');
+    if (target && target.dataset.id) {
+        // Dragging a task
+        const taskId = target.dataset.id;
+        const taskData = this.tasks.get(taskId);
+        if (taskData) {
+            this.draggedTask = taskData;
+            this.isDragging = true;
 
-    const tasksLayer = this.tasksLayer || this.canvas.querySelector('.tasks-layer')
-    if (!tasksLayer) return
+            const canvasRect = this.canvas.getBoundingClientRect();
+            const mouseX = event.clientX - canvasRect.left;
+            const mouseY = event.clientY - canvasRect.top;
 
-    const scrollTop = tasksLayer.scrollTop
-    const scrollLeft = tasksLayer.scrollLeft
-    const viewportHeight = tasksLayer.clientHeight
-    const viewportWidth = tasksLayer.clientWidth
-    const viewportCenterY = scrollTop + viewportHeight / 2
-    const viewportCenterX = scrollLeft + viewportWidth / 2
+            // Task position in unscaled/unpanned coordinates
+            const taskX = taskData.x;
+            const taskY = taskData.y;
 
-    // Enhanced distance calculation for more responsive scaling
-    const maxDistance = Math.min(viewportHeight, viewportWidth) / 2
-    const minScale = 0.5
-    const maxScale = 1.2
-    const centerScale = 1.4 // Larger scale for items in the center
+            // Convert to view coordinates (with pan and scale)
+            const viewX = taskX * this.scale + this.pan.x;
+            const viewY = taskY * this.scale + this.pan.y;
 
-    this.tasks.forEach(({ task, x, y }) => {
-      if (task.element) {
-        const taskCenterX = x + task.element.offsetWidth / 2
-        const taskCenterY = y + task.element.offsetHeight / 2
-        
-        // Calculate distance from viewport center using both X and Y
-        const distanceX = Math.abs(viewportCenterX - taskCenterX)
-        const distanceY = Math.abs(viewportCenterY - taskCenterY)
-        const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
-
-        let scale
-        if (distance <= maxDistance / 4) {
-          // Items in the center get the largest scale
-          scale = centerScale
-        } else if (distance >= maxDistance) {
-          // Items far from center get minimum scale
-          scale = minScale
-        } else {
-          // Smooth transition between center and edge
-          const normalizedDistance = (distance - maxDistance / 4) / (maxDistance - maxDistance / 4)
-          scale = centerScale - normalizedDistance * (centerScale - minScale)
+            this.dragOffset.x = mouseX - viewX;
+            this.dragOffset.y = mouseY - viewY;
         }
-        
-        // Apply smooth scaling with easing
-        task.setScale(scale)
-        
-        // Add subtle opacity change based on distance
-        const opacity = Math.max(0.6, 1 - (distance / maxDistance) * 0.4)
-        if (task.element) {
-          task.element.style.opacity = opacity
-        }
+    } else {
+        // Panning the canvas
+        this.isPanning = true;
+        this.lastMousePosition = { x: event.clientX, y: event.clientY };
+    }
+  }
+
+  handleMouseMove(event) {
+      if (this.isDragging && this.draggedTask) {
+          event.preventDefault();
+          const canvasRect = this.canvas.getBoundingClientRect();
+          const mouseX = event.clientX - canvasRect.left;
+          const mouseY = event.clientY - canvasRect.top;
+
+          // New view position
+          const newViewX = mouseX - this.dragOffset.x;
+          const newViewY = mouseY - this.dragOffset.y;
+
+          // Convert back to model coordinates
+          const newX = (newViewX - this.pan.x) / this.scale;
+          const newY = (newViewY - this.pan.y) / this.scale;
+
+          this.updateTaskPosition(this.draggedTask.task.id, newX, newY);
+          this.redrawConnections();
+      } else if (this.isPanning) {
+          event.preventDefault();
+          const dx = event.clientX - this.lastMousePosition.x;
+          const dy = event.clientY - this.lastMousePosition.y;
+
+          this.pan.x += dx;
+          this.pan.y += dy;
+
+          this.updateCanvasTransform();
+          this.lastMousePosition = { x: event.clientX, y: event.clientY };
       }
-    })
+  }
 
-    // Also handle groups if they exist
-    this.groups.forEach(({ group, x, y }) => {
-      if (group.element) {
-        const groupCenterX = x + group.element.offsetWidth / 2
-        const groupCenterY = y + group.element.offsetHeight / 2
-        
-        const distanceX = Math.abs(viewportCenterX - groupCenterX)
-        const distanceY = Math.abs(viewportCenterY - groupCenterY)
-        const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
+  handleMouseUp(event) {
+      this.isDragging = false;
+      this.isPanning = false;
+      this.draggedTask = null;
+  }
 
-        let scale
-        if (distance <= maxDistance / 4) {
-          scale = centerScale * 0.9 // Slightly smaller than tasks
-        } else if (distance >= maxDistance) {
-          scale = minScale
-        } else {
-          const normalizedDistance = (distance - maxDistance / 4) / (maxDistance - maxDistance / 4)
-          scale = (centerScale * 0.9) - normalizedDistance * ((centerScale * 0.9) - minScale)
-        }
-        
-        // Apply scaling to group
-        group.element.style.transform = `scale(${scale})`
-        
-        // Add opacity change
-        const opacity = Math.max(0.6, 1 - (distance / maxDistance) * 0.4)
-        group.element.style.opacity = opacity
-      }
-    })
+  handleWheel(event) {
+    event.preventDefault();
+    const zoomFactor = event.deltaY < 0 ? 1.1 : 0.9;
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    this.zoom(zoomFactor, { x: mouseX, y: mouseY });
   }
 
   addTask(task, x, y) {
@@ -378,11 +378,11 @@ export class WorkflowCanvas {
     const fromTask = fromData.task
     const toTask = toData.task
 
-    // Calculate connection points
-    const fromX = fromData.x + 200 // Task width
-    const fromY = fromData.y + 40 // Task center
-    const toX = toData.x
-    const toY = toData.y + 40
+    // Apply pan and scale to connection points
+    const fromX = (fromData.x + 200) * this.scale + this.pan.x;
+    const fromY = (fromData.y + 40) * this.scale + this.pan.y;
+    const toX = toData.x * this.scale + this.pan.x;
+    const toY = (toData.y + 40) * this.scale + this.pan.y;
 
     try {
       // Create SVG line for straight connection (for test compatibility)
@@ -505,6 +505,24 @@ export class WorkflowCanvas {
           this.scrollToShowAllComponents() // Use scroll-based centering
           this.updateStats() // Update stats again after layout
           console.log('🎯 Auto-layout completed and components centered')
+          
+          // Add debugging info about the scrollable area
+          setTimeout(() => {
+            const tasksLayer = this.tasksLayer || this.container.querySelector('.tasks-layer')
+            if (tasksLayer) {
+              console.log('📏 Tasks layer dimensions after layout:')
+              console.log(`  - Client size: ${tasksLayer.clientWidth}x${tasksLayer.clientHeight}`)
+              console.log(`  - Scroll size: ${tasksLayer.scrollWidth}x${tasksLayer.scrollHeight}`)
+              console.log(`  - Current scroll: ${tasksLayer.scrollLeft}, ${tasksLayer.scrollTop}`)
+              console.log(`  - Can scroll: ${tasksLayer.scrollWidth > tasksLayer.clientWidth || tasksLayer.scrollHeight > tasksLayer.clientHeight}`)
+              console.log(`  - Task count: ${this.tasks.size}`)
+              
+              // Try a test scroll to verify the event fires
+              console.log('🧪 Testing scroll event by scrolling 50px...')
+              tasksLayer.scrollBy(50, 50)
+            }
+          }, 500)
+          
           resolve()
         }, 200)
         
@@ -605,6 +623,7 @@ export class WorkflowCanvas {
       visited.add(taskId)
       
       const taskData = this.tasks.get(taskId)
+      
       if (taskData) {
         taskData.task.dependencies.forEach(depId => visit(depId))
         order.push(taskId)
@@ -705,24 +724,26 @@ export class WorkflowCanvas {
   }
 
   zoom(factor, center = null) {
-    // For scroll-based component scaling, we adjust the overall viewport scale
-    // This affects the connections but not individual component positions
-    const oldScale = this.scale
-    this.scale *= factor
-    this.scale = Math.max(0.1, Math.min(3, this.scale))
+    const oldScale = this.scale;
+    this.scale *= factor;
+    this.scale = Math.max(0.1, Math.min(3, this.scale));
+
+    if (center) {
+      // Adjust pan to zoom around the mouse pointer
+      this.pan.x = center.x - (center.x - this.pan.x) * (this.scale / oldScale);
+      this.pan.y = center.y - (center.y - this.pan.y) * (this.scale / oldScale);
+    }
     
-    // Only update connections layer transform
-    this.updateCanvasTransform()
+    this.updateCanvasTransform();
+    this.redrawConnections();
   }
 
   updateCanvasTransform() {
-    // For scroll-based component scaling, we only transform connections layer
-    // Tasks layer scrolling handles the individual component scaling
-    if (this.connectionsLayer) {
+    if (this.tasksLayer) {
       const transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.scale})`
-      this.connectionsLayer.style.transform = transform
+      this.tasksLayer.style.transform = transform
+      this.tasksLayer.style.transformOrigin = '0 0';
     }
-    // NOTE: Do not transform tasksLayer to avoid conflicts with scroll-based component scaling
   }
 
   fitToScreen() {
@@ -949,8 +970,8 @@ export class WorkflowCanvas {
     const taskHeight = 150 // Increased height for better spacing
     const horizontalSpacing = 80 // Increased horizontal gap
     const verticalSpacing = 40 // Increased vertical gap
-    const startX = 100
-    const startY = 120
+    const startX = 150 // Increased buffer from left edge
+    const startY = 150 // Increased buffer from top edge
     
     // Group tasks by their dependency level (topological layers)
     const levels = this.getTaskLevels()
@@ -970,7 +991,7 @@ export class WorkflowCanvas {
         if (taskData) {
           // Calculate position based on level and index within level
           const x = startX + (levelNum * (taskWidth + horizontalSpacing))
-          const y = Math.max(80, levelStartY + (index * (taskHeight + verticalSpacing)))
+          const y = Math.max(startY, levelStartY + (index * (taskHeight + verticalSpacing)))
           
           // Update task position
           taskData.x = x
@@ -1013,7 +1034,7 @@ export class WorkflowCanvas {
     const groupArray = Array.from(this.groups.values())
     const groupWidth = 280
     const groupSpacing = 100
-    const startX = 120
+    const startX = 170 // Increased buffer from left edge
     
     groupArray.forEach(({ group }, index) => {
       const x = startX + (index % 3) * (groupWidth + groupSpacing) // 3 groups per row
@@ -1072,6 +1093,49 @@ export class WorkflowCanvas {
     })
     
     return levelGroups
+  }
+
+  createDebugOverlay() {
+    // Create a debug overlay to show scroll and position information
+    const debugOverlay = document.createElement('div')
+    debugOverlay.id = 'scroll-debug-overlay'
+    debugOverlay.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      z-index: 10000;
+      max-width: 300px;
+      pointer-events: none;
+    `
+    debugOverlay.innerHTML = `
+      <h4 style="margin: 0 0 10px 0; color: #3b82f6;">Scroll Debug</h4>
+      <div id="debug-scroll-pos">Scroll: (0, 0)</div>
+      <div id="debug-viewport-center">Center: (0, 0)</div>
+      <div id="debug-task-count">Tasks: 0</div>
+      <div id="debug-position-status">Position Status: OK</div>
+    `
+    document.body.appendChild(debugOverlay)
+    this.debugOverlay = debugOverlay
+  }
+
+  updateDebugOverlay(scrollLeft, scrollTop, centerX, centerY) {
+    if (!this.debugOverlay) return
+    
+    const scrollPosEl = this.debugOverlay.querySelector('#debug-scroll-pos')
+    const centerEl = this.debugOverlay.querySelector('#debug-viewport-center')
+    const taskCountEl = this.debugOverlay.querySelector('#debug-task-count')
+    const statusEl = this.debugOverlay.querySelector('#debug-position-status')
+    
+    if (scrollPosEl) scrollPosEl.textContent = `Scroll: (${scrollLeft}, ${scrollTop})`
+    if (centerEl) centerEl.textContent = `Center: (${centerX.toFixed(0)}, ${centerY.toFixed(0)})`
+    if (taskCountEl) taskCountEl.textContent = `Tasks: ${this.tasks.size}`
+    if (statusEl) statusEl.textContent = `Position Status: ${this.positionMismatches > 0 ? 'MISMATCH' : 'OK'}`
   }
 }
 

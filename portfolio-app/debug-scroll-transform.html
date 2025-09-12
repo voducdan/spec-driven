@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Scroll Transform</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        .container { 
+            width: 100vw; 
+            height: 100vh; 
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            overflow: hidden;
+        }
+        .tasks-layer { 
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: auto; 
+            padding: 50px;
+            min-width: 200vw;
+            min-height: 200vh;
+        }
+        .test-task {
+            position: absolute;
+            width: 200px;
+            height: 100px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: transform 0.1s ease;
+            transform-origin: top left; /* This is key! */
+        }
+        .log {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            z-index: 1000;
+            max-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tasks-layer" id="tasksLayer">
+            <!-- Tasks will be added here -->
+        </div>
+    </div>
+    
+    <div class="status" id="status">
+        <div>Scroll to test scaling</div>
+        <div id="scrollInfo">Scroll: (0, 0)</div>
+        <div id="centerInfo">Center: (0, 0)</div>
+    </div>
+    
+    <div class="log" id="log">
+        <div><strong>Transform Origin Test</strong></div>
+        <div>Testing if transform-origin: top left prevents position shifts</div>
+    </div>
+
+    <script>
+        const tasksLayer = document.getElementById('tasksLayer');
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+        const scrollInfo = document.getElementById('scrollInfo');
+        const centerInfo = document.getElementById('centerInfo');
+        
+        // Create test tasks at known positions
+        const tasks = [
+            { id: 1, x: 100, y: 100, title: 'Task 1' },
+            { id: 2, x: 400, y: 150, title: 'Task 2' },
+            { id: 3, x: 200, y: 300, title: 'Task 3' },
+            { id: 4, x: 600, y: 200, title: 'Task 4' },
+            { id: 5, x: 300, y: 450, title: 'Task 5' }
+        ];
+        
+        function logMessage(message) {
+            const div = document.createElement('div');
+            div.textContent = message;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Create task elements
+        tasks.forEach(task => {
+            const element = document.createElement('div');
+            element.className = 'test-task';
+            element.style.left = task.x + 'px';
+            element.style.top = task.y + 'px';
+            element.textContent = task.title + `\n(${task.x}, ${task.y})`;
+            element.id = `task-${task.id}`;
+            
+            tasksLayer.appendChild(element);
+            task.element = element;
+            
+            logMessage(`Created ${task.title} at (${task.x}, ${task.y})`);
+        });
+        
+        // Center the view on the tasks
+        setTimeout(() => {
+            const centerX = 400;
+            const centerY = 300;
+            tasksLayer.scrollTo(centerX - tasksLayer.clientWidth / 2, centerY - tasksLayer.clientHeight / 2);
+            logMessage(`Centered view at (${centerX}, ${centerY})`);
+        }, 100);
+        
+        // Handle scroll with scaling
+        tasksLayer.addEventListener('scroll', () => {
+            const scrollLeft = tasksLayer.scrollLeft;
+            const scrollTop = tasksLayer.scrollTop;
+            const viewportWidth = tasksLayer.clientWidth;
+            const viewportHeight = tasksLayer.clientHeight;
+            const viewportCenterX = scrollLeft + viewportWidth / 2;
+            const viewportCenterY = scrollTop + viewportHeight / 2;
+            
+            // Update status
+            scrollInfo.textContent = `Scroll: (${scrollLeft}, ${scrollTop})`;
+            centerInfo.textContent = `Center: (${viewportCenterX.toFixed(0)}, ${viewportCenterY.toFixed(0)})`;
+            
+            const maxDistance = Math.min(viewportHeight, viewportWidth) / 2;
+            const minScale = 0.6;
+            const centerScale = 1.5;
+            
+            tasks.forEach(task => {
+                // Use STORED coordinates, not DOM positions
+                const taskCenterX = task.x + 100; // half width
+                const taskCenterY = task.y + 50;  // half height
+                
+                const distanceX = Math.abs(viewportCenterX - taskCenterX);
+                const distanceY = Math.abs(viewportCenterY - taskCenterY);
+                const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                
+                let scale;
+                if (distance <= maxDistance / 4) {
+                    scale = centerScale;
+                } else if (distance >= maxDistance) {
+                    scale = minScale;
+                } else {
+                    const normalizedDistance = (distance - maxDistance / 4) / (maxDistance - maxDistance / 4);
+                    scale = centerScale - normalizedDistance * (centerScale - minScale);
+                }
+                
+                // Apply scale with transform-origin: top left
+                task.element.style.transform = `scale(${scale})`;
+                
+                // Log for first task only to avoid spam
+                if (task.id === 1) {
+                    logMessage(`Task 1: distance=${distance.toFixed(1)}, scale=${scale.toFixed(2)}`);
+                }
+            });
+        }, { passive: true });
+        
+        logMessage('Setup complete. Start scrolling to test!');
+    </script>
+</body>
+</html>

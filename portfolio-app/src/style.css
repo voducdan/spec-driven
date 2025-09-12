@@ -530,7 +530,7 @@ body {
 .workflow-canvas {
   position: relative;
   width: 100%;
-  height: calc(100vh - 300px);
+  /* height: calc(100vh - 300px); - REMOVED: This was preventing full-screen layout */
   overflow: auto;
   background:
     radial-gradient(circle at 20px 20px, var(--border-color) 1px, transparent 1px),
@@ -571,9 +571,13 @@ body {
 }
 
 .task-node:hover {
-  transform: translateY(-2px);
+  /* Remove transform to avoid conflicts with scroll-based scaling */
+  /* transform: translateY(-2px); */
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   border-color: var(--airflow-blue);
+  /* Use margin-top instead of transform for hover lift effect */
+  margin-top: -2px;
+  margin-bottom: 2px;
 }
 
 .task-node.status-success {
