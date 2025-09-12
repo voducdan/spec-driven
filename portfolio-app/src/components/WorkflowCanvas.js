@@ -192,10 +192,17 @@ export class WorkflowCanvas {
     // Enhanced scroll handling for smooth scaling
     const tasksLayer = this.tasksLayer || this.container.querySelector('.tasks-layer')
     if (tasksLayer) {
+      console.log('🔍 Tasks layer found:', tasksLayer)
+      console.log('🔍 Tasks layer scroll properties:', {
+        scrollHeight: tasksLayer.scrollHeight,
+        clientHeight: tasksLayer.clientHeight,
+        overflow: getComputedStyle(tasksLayer).overflow
+      })
       tasksLayer.addEventListener('scroll', () => this.handleScroll(), { passive: true })
       console.log('✅ Enhanced scroll listener attached to tasks layer')
     } else {
       // Fallback to canvas scroll
+      console.log('⚠️ Tasks layer not found, using canvas fallback')
       this.canvas.addEventListener('scroll', () => this.handleScroll(), { passive: true })
       console.log('✅ Fallback scroll listener attached to canvas')
     }
@@ -231,12 +238,12 @@ export class WorkflowCanvas {
       this.canvas.style.cursor = 'default'
     })
 
-    // NOTE: Wheel zoom disabled to prevent conflicts with scroll-based individual component scaling
-    // Individual components scale based on viewport position via handleScroll() method
-    // Zoom can still be controlled via zoom in/out buttons which call zoom() method directly
+    // Enable natural scrolling without zoom conflicts
+    // The scroll events will be handled by the tasks layer scroll listener
   }
 
   handleScroll() {
+    console.log('🖱️ Scroll event detected!') // Debug log
     if (!this.canvas) return
 
     const tasksLayer = this.tasksLayer || this.canvas.querySelector('.tasks-layer')
@@ -248,6 +255,8 @@ export class WorkflowCanvas {
     const viewportWidth = tasksLayer.clientWidth
     const viewportCenterY = scrollTop + viewportHeight / 2
     const viewportCenterX = scrollLeft + viewportWidth / 2
+
+    console.log(`📏 Scroll position: top=${scrollTop}, left=${scrollLeft}, center=(${viewportCenterX}, ${viewportCenterY})`) // Debug log
 
     // Enhanced distance calculation for more responsive scaling
     const maxDistance = Math.min(viewportHeight, viewportWidth) / 2

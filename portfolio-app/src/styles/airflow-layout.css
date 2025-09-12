@@ -162,10 +162,27 @@ body {
   height: 100%;
   overflow: auto; /* This will enable scrolling */
   padding: 2rem;
-  min-height: 200vh; /* Ensure there's enough content to scroll */
-  min-width: 200vw; /* Ensure horizontal scrolling space */
+  min-height: 300vh; /* Increased for more vertical scroll space */
+  min-width: 300vw; /* Increased for more horizontal scroll space */
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
   scroll-behavior: smooth; /* Smooth scrolling behavior */
+  /* Ensure scrollbars are visible for testing */
+  scrollbar-width: auto; /* Firefox */
+  -ms-overflow-style: auto; /* Internet Explorer 10+ */
+}
+
+.workflow-canvas .tasks-layer::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.workflow-canvas .tasks-layer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+}
+
+.workflow-canvas .tasks-layer::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 /* Task Node Styles for Airflow Layout */
