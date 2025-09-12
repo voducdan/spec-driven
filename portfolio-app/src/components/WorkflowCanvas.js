@@ -202,35 +202,9 @@ export class WorkflowCanvas {
   }
 
   setupPanAndZoom() {
-    let isPanning = false
-    let lastPanPoint = { x: 0, y: 0 }
-
-    this.canvas.addEventListener('mousedown', (e) => {
-      if (e.target === this.canvas || e.target.closest('.connections-layer')) {
-        isPanning = true
-        lastPanPoint = { x: e.clientX, y: e.clientY }
-        this.canvas.style.cursor = 'grabbing'
-      }
-    })
-
-    this.canvas.addEventListener('mousemove', (e) => {
-      if (isPanning) {
-        const deltaX = e.clientX - lastPanPoint.x
-        const deltaY = e.clientY - lastPanPoint.y
-        
-        this.pan.x += deltaX
-        this.pan.y += deltaY
-        
-        this.updateCanvasTransform()
-        lastPanPoint = { x: e.clientX, y: e.clientY }
-      }
-    })
-
-    this.canvas.addEventListener('mouseup', () => {
-      isPanning = false
-      this.canvas.style.cursor = 'default'
-    })
-
+    // Disable pan functionality to prevent conflicts with scroll-based scaling
+    // The scroll-based individual component scaling provides the interactive experience
+    
     // Enable natural scrolling without zoom conflicts
     // The scroll events will be handled by the tasks layer scroll listener
   }
@@ -528,9 +502,9 @@ export class WorkflowCanvas {
         // Auto-layout tasks to prevent overlaps and center the DAG
         setTimeout(() => {
           this.autoLayoutTasks()
-          this.centerDAG()
+          this.scrollToShowAllComponents() // Use scroll-based centering
           this.updateStats() // Update stats again after layout
-          console.log('🎯 Auto-layout completed and stats updated')
+          console.log('🎯 Auto-layout completed and components centered')
           resolve()
         }, 200)
         
@@ -731,39 +705,43 @@ export class WorkflowCanvas {
   }
 
   zoom(factor, center = null) {
+    // For scroll-based component scaling, we adjust the overall viewport scale
+    // This affects the connections but not individual component positions
     const oldScale = this.scale
     this.scale *= factor
     this.scale = Math.max(0.1, Math.min(3, this.scale))
     
-    if (center) {
-      // Zoom towards cursor position
-      const rect = this.canvas.getBoundingClientRect()
-      const x = center.x - rect.left
-      const y = center.y - rect.top
-      
-      this.pan.x = x - (x - this.pan.x) * (this.scale / oldScale)
-      this.pan.y = y - (y - this.pan.y) * (this.scale / oldScale)
-    }
-    
+    // Only update connections layer transform
     this.updateCanvasTransform()
   }
 
   updateCanvasTransform() {
-    const transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.scale})`
-    this.tasksLayer.style.transform = transform
-    this.connectionsLayer.style.transform = transform
-    // NOTE: Removed canvas scaling to avoid conflicts with scroll-based individual component scaling
-    // Individual tasks and groups are scaled via handleScroll() method instead
+    // For scroll-based component scaling, we only transform connections layer
+    // Tasks layer scrolling handles the individual component scaling
+    if (this.connectionsLayer) {
+      const transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.scale})`
+      this.connectionsLayer.style.transform = transform
+    }
+    // NOTE: Do not transform tasksLayer to avoid conflicts with scroll-based component scaling
   }
 
   fitToScreen() {
+    // Reset scale and pan for connections layer only
     this.scale = 1
     this.pan = { x: 0, y: 0 }
     this.updateCanvasTransform()
+    
+    // Scroll to show all components initially
+    this.scrollToShowAllComponents()
   }
 
   centerDAG() {
-    // Calculate center of all tasks and groups
+    // For scroll-based scaling, we scroll to center all components
+    this.scrollToShowAllComponents()
+  }
+  
+  scrollToShowAllComponents() {
+    // Calculate bounds of all tasks and groups
     const taskPositions = Array.from(this.tasks.values()).map(({ x, y }) => ({ x, y }))
     const groupPositions = Array.from(this.groups.values()).map(({ x, y }) => ({ x, y }))
     const allPositions = [...taskPositions, ...groupPositions]
@@ -777,16 +755,29 @@ export class WorkflowCanvas {
       maxY: Math.max(...allPositions.map(p => p.y))
     }
     
-    // Center on the main tasks area (top portion) for better initial view
-    const centerX = (bounds.minX + bounds.maxX) / 2
-    const centerY = bounds.minY + 200 // Focus on the top area where main tasks are
+    // Calculate center of all content
+    const contentCenterX = (bounds.minX + bounds.maxX) / 2
+    const contentCenterY = (bounds.minY + bounds.maxY) / 2
     
-    const canvasRect = this.canvas.getBoundingClientRect()
-    this.pan.x = canvasRect.width / 2 - centerX * this.scale
-    this.pan.y = canvasRect.height / 2 - centerY * this.scale
+    // Get tasks layer dimensions
+    const tasksLayer = this.tasksLayer
+    if (!tasksLayer) return
     
-    this.updateCanvasTransform()
-    console.log(`🎯 Centered DAG on main tasks area: center=(${centerX}, ${centerY})`)
+    const viewportWidth = tasksLayer.clientWidth
+    const viewportHeight = tasksLayer.clientHeight
+    
+    // Calculate scroll position to center the content
+    const scrollLeft = Math.max(0, contentCenterX - viewportWidth / 2)
+    const scrollTop = Math.max(0, contentCenterY - viewportHeight / 2)
+    
+    // Scroll to center all components
+    tasksLayer.scrollTo({
+      left: scrollLeft,
+      top: scrollTop,
+      behavior: 'smooth'
+    })
+    
+    console.log(`🎯 Scrolled to center all components: center=(${contentCenterX}, ${contentCenterY}), scroll=(${scrollLeft}, ${scrollTop})`)
   }
 
   setLayout(layout) {
@@ -860,7 +851,7 @@ export class WorkflowCanvas {
   refresh() {
     console.log('🔄 Refreshing Portfolio DAG...')
     this.createPortfolioDAG()
-    this.centerDAG()
+    this.scrollToShowAllComponents() // Use scroll-based centering
     // Force stats update after refresh
     setTimeout(() => {
       this.updateStats()
