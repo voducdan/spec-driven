@@ -10,6 +10,21 @@ export class TaskGroup {
     this.element = null
     this.animationDuration = 300
     this.taskNodes = []
+    this.isGroup = true; // Differentiate from TaskNode
+  }
+
+  updatePosition(x, y) {
+    if (this.element) {
+      // Position is now handled by transform for consistency with SVG
+      this.element.style.transform = `translate(${x}px, ${y}px)`;
+    }
+  }
+
+  updateSize(width, height) {
+    if (this.element) {
+      this.element.style.width = `${width}px`;
+      this.element.style.height = `${height}px`;
+    }
   }
 
   addTask(task) {
@@ -22,83 +37,40 @@ export class TaskGroup {
     }
   }
 
-  render(x, y) {
+  render(x, y, width, height) {
     const group = document.createElement('div')
     group.className = `task-group ${this.isExpanded ? 'expanded' : 'collapsed'}`
     group.id = `group-${this.id}`
-    group.style.left = `${x}px`
-    group.style.top = `${y}px`
+    
+    // Remove left/top positioning. Position will be set by transform.
+    group.style.position = 'absolute';
+    group.style.left = '0px';
+    group.style.top = '0px';
+    this.updatePosition(x, y); // Set initial position via transform
+
+    group.style.width = `${width}px`
+    group.style.height = `${height}px`
     group.style.transformOrigin = 'top left'
     group.style.transition = `all ${this.animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
 
-    const progress = this.getProgress()
-    
     const header = document.createElement('div')
     header.className = 'group-header'
     header.innerHTML = `
-      <button class="expand-toggle" title="${this.isExpanded ? 'Collapse' : 'Expand'} group">
-        <span class="toggle-icon">${this.isExpanded ? '▼' : '▶'}</span>
-      </button>
       <div class="group-info">
         <span class="group-title">${this.title}</span>
-        <span class="task-count">${this.tasks.length} task${this.tasks.length !== 1 ? 's' : ''}</span>
-      </div>
-      <div class="group-progress">
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${progress.percentage}%"></div>
-        </div>
-        <span class="progress-text">${progress.completed}/${progress.total}</span>
-      </div>
-      <div class="group-status">
-        <span class="status-indicator ${this.getGroupStatus()}"></span>
       </div>
     `
 
-    const content = document.createElement('div')
-    content.className = 'group-content'
-    content.style.maxHeight = this.isExpanded ? `${this.tasks.length * 80 + 20}px` : '0px'
-    content.style.overflow = 'hidden'
-    content.style.transition = `max-height ${this.animationDuration}ms ease-in-out`
-
-    // Render tasks within group
-    this.renderTasks(content)
-
     group.appendChild(header)
-    group.appendChild(content)
-
-    // Add event listeners
-    this.addEventListeners(group)
 
     this.element = group
     return group
   }
 
+  // This method is no longer responsible for rendering individual tasks within the group element.
+  // Tasks are now positioned independently on the canvas.
   renderTasks(container) {
-    this.taskNodes = []
-    
-    this.tasks.forEach((task, index) => {
-      let taskNode
-      
-      if (typeof task === 'string') {
-        // Create a simple task node from string
-        taskNode = this.createSimpleTaskNode(task, index)
-      } else if (task instanceof TaskNode) {
-        // Use existing TaskNode
-        taskNode = task
-      } else {
-        // Create TaskNode from object
-        taskNode = new TaskNode(
-          task.id || `${this.id}-task-${index}`,
-          task.title || task,
-          task.type || 'generic',
-          task.status || 'pending'
-        )
-      }
-
-      const taskElement = this.createGroupTaskElement(taskNode, index)
-      container.appendChild(taskElement)
-      this.taskNodes.push(taskNode)
-    })
+    // Deprecated: Tasks are rendered directly on the canvas by WorkflowCanvas
   }
 
   createSimpleTaskNode(taskTitle, index) {
@@ -111,9 +83,10 @@ export class TaskGroup {
   }
 
   createGroupTaskElement(taskNode, index) {
+    // This is now deprecated as tasks are not rendered inside the group element.
+    // Kept for potential future use or different layout strategies.
     const taskElement = document.createElement('div')
     taskElement.className = `group-task-item status-${taskNode.status}`
-    taskElement.style.animationDelay = `${index * 50}ms`
     
     taskElement.innerHTML = `
       <div class="task-item-content">
@@ -160,18 +133,11 @@ export class TaskGroup {
   }
 
   addEventListeners(group) {
-    const toggleBtn = group.querySelector('.expand-toggle')
-    toggleBtn.addEventListener('click', (e) => {
+    // Event listeners for expand/collapse can be added here if that functionality is restored.
+    // For now, groups are just visual containers.
+    group.addEventListener('click', (e) => {
       e.stopPropagation()
-      this.toggle()
-    })
-
-    // Group header click (excluding toggle button)
-    const header = group.querySelector('.group-header')
-    header.addEventListener('click', (e) => {
-      if (!e.target.closest('.expand-toggle')) {
-        this.onGroupClick()
-      }
+      this.onGroupClick()
     })
 
     // Hover effects
@@ -180,181 +146,22 @@ export class TaskGroup {
   }
 
   toggle() {
-    this.isExpanded = !this.isExpanded
-    
-    if (!this.element) return
-    
-    const content = this.element.querySelector('.group-content')
-    const toggleIcon = this.element.querySelector('.toggle-icon')
-    const toggleBtn = this.element.querySelector('.expand-toggle')
-    
-    if (this.isExpanded) {
-      this.element.classList.remove('collapsed')
-      this.element.classList.add('expanded')
-      if (content) {
-        content.style.maxHeight = `${this.tasks.length * 80 + 20}px`
-      }
-      if (toggleIcon) {
-        toggleIcon.textContent = '▼'
-      }
-      if (toggleBtn) {
-        toggleBtn.title = 'Collapse group'
-      }
-      
-      // Animate tasks in
-      this.animateTasksIn()
-    } else {
-      this.element.classList.remove('expanded')
-      this.element.classList.add('collapsed')
-      if (content) {
-        content.style.maxHeight = '0px'
-      }
-      if (toggleIcon) {
-        toggleIcon.textContent = '▶'
-      }
-      if (toggleBtn) {
-        toggleBtn.title = 'Expand group'
-      }
-    }
-
-    // Dispatch custom event
-    this.element.dispatchEvent(new CustomEvent('groupToggled', {
-      detail: { group: this, expanded: this.isExpanded }
-    }))
-  }
-
-  animateTasksIn() {
-    const taskItems = this.element.querySelectorAll('.group-task-item')
-    taskItems.forEach((item, index) => {
-      item.style.opacity = '0'
-      item.style.transform = 'translateX(-20px)'
-      
-      setTimeout(() => {
-        item.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out'
-        item.style.opacity = '1'
-        item.style.transform = 'translateX(0)'
-      }, index * 50)
-    })
+    // This functionality is currently disabled as groups are simple containers.
+    // It can be re-enabled if interactive groups are needed.
+    console.log('Toggling group is currently disabled.')
   }
 
   onGroupClick() {
-    console.log(`Group ${this.id} clicked`)
-    this.highlight()
+    console.log(`Group clicked: ${this.title}`)
+    // Add any group-specific click behavior here
   }
 
   onHover() {
-    this.element.style.transform = 'scale(1.02)'
-    this.element.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)'
+    this.element?.classList.add('hovered')
   }
 
   onHoverEnd() {
-    this.element.style.transform = 'scale(1)'
-    this.element.style.boxShadow = ''
-  }
-
-  highlight() {
-    this.element.classList.add('highlighted')
-    setTimeout(() => {
-      this.element.classList.remove('highlighted')
-    }, 2000)
-  }
-
-  selectTask(taskNode) {
-    // Remove previous selections
-    this.element.querySelectorAll('.group-task-item.selected').forEach(item => {
-      item.classList.remove('selected')
-    })
-
-    // Add selection to clicked task
-    const taskElement = Array.from(this.element.querySelectorAll('.group-task-item'))
-      .find(item => item.querySelector('.task-item-title').textContent === taskNode.title)
-    
-    if (taskElement) {
-      taskElement.classList.add('selected')
-    }
-
-    // Dispatch selection event
-    this.element.dispatchEvent(new CustomEvent('taskSelected', {
-      detail: { task: taskNode, group: this }
-    }))
-  }
-
-  handleTaskAction(taskNode, action) {
-    switch (action) {
-      case 'view':
-        taskNode.showDetailedView()
-        break
-      case 'run':
-        this.runTask(taskNode)
-        break
-      case 'logs':
-        taskNode.showLogs()
-        break
-      default:
-        console.log(`Unknown action: ${action} for task: ${taskNode.title}`)
-    }
-  }
-
-  runTask(taskNode) {
-    taskNode.updateStatus('running')
-    taskNode.pulse()
-    
-    if (!this.element) return
-    
-    // Update the group task item status
-    const taskElement = Array.from(this.element.querySelectorAll('.group-task-item'))
-      .find(item => {
-        const titleEl = item.querySelector('.task-item-title')
-        return titleEl && titleEl.textContent === taskNode.title
-      })
-    
-    if (taskElement) {
-      taskElement.className = `group-task-item status-running`
-      const statusIndicator = taskElement.querySelector('.status-indicator')
-      const statusText = taskElement.querySelector('.status-text')
-      if (statusIndicator) {
-        statusIndicator.className = 'status-indicator running'
-      }
-      if (statusText) {
-        statusText.textContent = 'Running'
-      }
-    }
-
-    // Simulate task completion
-    setTimeout(() => {
-      taskNode.updateStatus('success')
-      if (taskElement) {
-        taskElement.className = `group-task-item status-success`
-        const statusIndicator = taskElement.querySelector('.status-indicator')
-        const statusText = taskElement.querySelector('.status-text')
-        if (statusIndicator) {
-          statusIndicator.className = 'status-indicator success'
-        }
-        if (statusText) {
-          statusText.textContent = 'Completed'
-        }
-      }
-      this.updateProgress()
-    }, 1000 + Math.random() * 2000)
-  }
-
-  updateProgress() {
-    const progress = this.getProgress()
-    const progressFill = this.element.querySelector('.progress-fill')
-    const progressText = this.element.querySelector('.progress-text')
-    const statusIndicator = this.element.querySelector('.group-status .status-indicator')
-    
-    if (progressFill) {
-      progressFill.style.width = `${progress.percentage}%`
-    }
-    
-    if (progressText) {
-      progressText.textContent = `${progress.completed}/${progress.total}`
-    }
-    
-    if (statusIndicator) {
-      statusIndicator.className = `status-indicator ${this.getGroupStatus()}`
-    }
+    this.element?.classList.remove('hovered')
   }
 
   getProgress() {

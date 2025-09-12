@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Connection Fix</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+        }
+        
+        .test-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Mimic the structure we fixed */
+        .workflow-canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* SVG positioned outside transformed layer (FIXED) */
+        .connections-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            overflow: visible;
+        }
+        
+        /* Tasks layer that gets transformed */
+        .tasks-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-origin: top left;
+        }
+        
+        .test-task {
+            position: absolute;
+            width: 200px;
+            height: 100px;
+            background: white;
+            color: #333;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .task-connection {
+            stroke: #3b82f6;
+            stroke-width: 4;
+            fill: none;
+            stroke-linecap: round;
+            marker-end: url(#arrowhead);
+        }
+        
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        .status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="workflow-canvas" id="canvas">
+            <!-- SVG connections layer positioned OUTSIDE the transformed tasks-layer -->
+            <svg class="connections-layer" width="100%" height="100%">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                     refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+                    </marker>
+                </defs>
+                <g id="connections-group">
+                    <!-- Connections will be drawn here -->
+                </g>
+            </svg>
+            
+            <div class="tasks-layer" id="tasksLayer">
+                <!-- Tasks will be positioned here -->
+                <div class="test-task" id="task1" style="left: 100px; top: 100px;">
+                    Task 1<br><small>Source</small>
+                </div>
+                <div class="test-task" id="task2" style="left: 400px; top: 150px;">
+                    Task 2<br><small>Target</small>
+                </div>
+                <div class="test-task" id="task3" style="left: 250px; top: 300px;">
+                    Task 3<br><small>Middle</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <h3>Connection Fix Test</h3>
+        <button onclick="drawConnections()">Draw Connections</button>
+        <button onclick="clearConnections()">Clear Connections</button>
+        <button onclick="transformTasks()">Transform Tasks</button>
+        <button onclick="resetTransform()">Reset Transform</button>
+    </div>
+    
+    <div class="status" id="status">
+        <div><strong>Status:</strong> Ready to test</div>
+        <div id="connectionStatus">Connections: 0</div>
+        <div id="transformStatus">Transform: none</div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const tasksLayer = document.getElementById('tasksLayer');
+        const connectionsGroup = document.getElementById('connections-group');
+        const status = document.getElementById('status');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const transformStatus = document.getElementById('transformStatus');
+        
+        let currentTransform = { scale: 1, translateX: 0, translateY: 0 };
+        
+        function log(message) {
+            console.log(message);
+        }
+        
+        function updateStatus() {
+            const pathCount = connectionsGroup.querySelectorAll('path').length;
+            connectionStatus.textContent = `Connections: ${pathCount}`;
+            transformStatus.textContent = `Transform: scale(${currentTransform.scale}) translate(${currentTransform.translateX}px, ${currentTransform.translateY}px)`;
+        }
+        
+        function drawConnections() {
+            log('🔗 Drawing connections...');
+            clearConnections();
+            
+            // Get task elements
+            const task1 = document.getElementById('task1');
+            const task2 = document.getElementById('task2');
+            const task3 = document.getElementById('task3');
+            
+            // Draw connections using the FIXED method (canvas as reference)
+            drawConnection(task1, task2, 'task1 -> task2');
+            drawConnection(task1, task3, 'task1 -> task3');
+            drawConnection(task3, task2, 'task3 -> task2');
+            
+            updateStatus();
+        }
+        
+        function drawConnection(fromElement, toElement, label) {
+            // Use the FIXED coordinate calculation
+            const fromRect = fromElement.getBoundingClientRect();
+            const toRect = toElement.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect(); // SVG is positioned relative to canvas
+            
+            // Calculate connection points
+            const fromX = (fromRect.left - canvasRect.left) + fromRect.width;
+            const fromY = (fromRect.top - canvasRect.top) + fromRect.height / 2;
+            const toX = toRect.left - canvasRect.left;
+            const toY = (toRect.top - canvasRect.top) + toRect.height / 2;
+            
+            log(`📍 ${label}: from(${fromX.toFixed(1)}, ${fromY.toFixed(1)}) to(${toX.toFixed(1)}, ${toY.toFixed(1)})`);
+            
+            // Create SVG path
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const controlOffset = Math.abs(toX - fromX) * 0.4;
+            const d = `M ${fromX} ${fromY} C ${fromX + controlOffset} ${fromY} ${toX - controlOffset} ${toY} ${toX} ${toY}`;
+            
+            path.setAttribute('d', d);
+            path.setAttribute('class', 'task-connection');
+            path.setAttribute('data-label', label);
+            
+            connectionsGroup.appendChild(path);
+            log(`✅ Connection added: ${label}`);
+        }
+        
+        function clearConnections() {
+            connectionsGroup.innerHTML = '';
+            log('🧹 Connections cleared');
+            updateStatus();
+        }
+        
+        function transformTasks() {
+            // Apply transform to tasks layer (simulating pan/zoom)
+            currentTransform.scale = 1.5;
+            currentTransform.translateX = 50;
+            currentTransform.translateY = 30;
+            
+            tasksLayer.style.transform = `translate(${currentTransform.translateX}px, ${currentTransform.translateY}px) scale(${currentTransform.scale})`;
+            
+            log(`🎯 Applied transform: ${tasksLayer.style.transform}`);
+            updateStatus();
+            
+            // Redraw connections to see if they follow correctly
+            setTimeout(() => {
+                log('🔄 Redrawing connections after transform...');
+                drawConnections();
+            }, 100);
+        }
+        
+        function resetTransform() {
+            currentTransform = { scale: 1, translateX: 0, translateY: 0 };
+            tasksLayer.style.transform = 'none';
+            
+            log('🔄 Transform reset');
+            updateStatus();
+            
+            // Redraw connections
+            setTimeout(() => {
+                drawConnections();
+            }, 100);
+        }
+        
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🧪 Connection fix test loaded');
+            log('📋 Test steps:');
+            log('1. Click "Draw Connections" to see initial connections');
+            log('2. Click "Transform Tasks" to apply transform and redraw');
+            log('3. Observe if connections follow the transformed tasks');
+            log('');
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

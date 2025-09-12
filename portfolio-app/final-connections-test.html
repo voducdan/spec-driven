@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Connections Final Test</title>
+    <link rel="stylesheet" href="src/styles/airflow-theme.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f1f5f9;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #e5e7eb;
+        }
+        .status-card.success {
+            border-left-color: #10b981;
+        }
+        .status-card.warning {
+            border-left-color: #f59e0b;
+        }
+        .status-card.error {
+            border-left-color: #ef4444;
+        }
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-detail {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        .status-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .workflow-container {
+            margin: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .workflow-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #374151;
+        }
+        .console-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🚀 Enhanced SVG Connections - Final Test</h1>
+        <p>Testing all three fixes: Quality, Group Connections, and Transform Sync</p>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card" id="quality-status">
+            <div class="status-title">🎨 Connection Quality</div>
+            <div class="status-detail">Smart routing with multiple path types</div>
+            <div class="status-value" id="quality-value">Loading...</div>
+        </div>
+        <div class="status-card" id="groups-status">
+            <div class="status-title">🔗 Group Connections</div>
+            <div class="status-detail">Inter-group connections with labels</div>
+            <div class="status-value" id="groups-value">Loading...</div>
+        </div>
+        <div class="status-card" id="transform-status">
+            <div class="status-title">🔄 Transform Sync</div>
+            <div class="status-detail">Connections follow zoom/pan operations</div>
+            <div class="status-value" id="transform-value">Loading...</div>
+        </div>
+        <div class="status-card" id="overall-status">
+            <div class="status-title">📊 Overall Status</div>
+            <div class="status-detail">All three issues resolved</div>
+            <div class="status-value" id="overall-value">Testing...</div>
+        </div>
+    </div>
+
+    <div class="workflow-container">
+        <div class="workflow-header">
+            📊 Portfolio Workflow Canvas - Enhanced Connections
+        </div>
+        <div id="workflow-container" style="height: 500px;"></div>
+    </div>
+
+    <div class="console-output" id="console-output">
+        <div>🔍 Console Output:</div>
+    </div>
+
+    <script>
+        // Capture console output
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addToConsole(message, type = 'log') {
+            const div = document.createElement('div');
+            div.style.marginBottom = '4px';
+            div.style.color = type === 'error' ? '#ef4444' : type === 'warn' ? '#f59e0b' : '#e2e8f0';
+            div.textContent = message;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = (...args) => {
+            originalLog(...args);
+            addToConsole(args.join(' '), 'log');
+        };
+
+        console.error = (...args) => {
+            originalError(...args);
+            addToConsole('ERROR: ' + args.join(' '), 'error');
+        };
+
+        console.warn = (...args) => {
+            originalWarn(...args);
+            addToConsole('WARN: ' + args.join(' '), 'warn');
+        };
+    </script>
+
+    <script type="module">
+        import { WorkflowCanvas } from './src/components/WorkflowCanvas.js';
+        import { portfolioData } from './src/data/portfolio-data.js';
+
+        console.log('🚀 Starting Enhanced Connections Final Test');
+        
+        // Status update functions
+        function updateStatus(cardId, status, value) {
+            const card = document.getElementById(cardId);
+            const valueEl = document.getElementById(cardId.replace('-status', '-value'));
+            
+            card.className = `status-card ${status}`;
+            valueEl.textContent = value;
+        }
+
+        // Test functions
+        function testConnectionQuality() {
+            console.log('🎨 Testing connection quality...');
+            
+            const connections = document.querySelectorAll('.task-connection');
+            const directConnections = document.querySelectorAll('.connection-direct');
+            const curvedConnections = document.querySelectorAll('.connection-curved');
+            const steppedConnections = document.querySelectorAll('.connection-stepped');
+            
+            console.log(`Connection analysis: Total=${connections.length}, Direct=${directConnections.length}, Curved=${curvedConnections.length}, Stepped=${steppedConnections.length}`);
+            
+            const hasSmartRouting = directConnections.length > 0 || curvedConnections.length > 0 || steppedConnections.length > 0;
+            const hasConnections = connections.length > 0;
+            
+            if (hasConnections && hasSmartRouting) {
+                updateStatus('quality-status', 'success', `✅ PASS (${connections.length} connections)`);
+                return true;
+            } else if (hasConnections) {
+                updateStatus('quality-status', 'warning', `⚠️ PARTIAL (${connections.length} basic)`);
+                return false;
+            } else {
+                updateStatus('quality-status', 'error', '❌ FAIL (No connections)');
+                return false;
+            }
+        }
+
+        function testGroupConnections() {
+            console.log('🔗 Testing group connections...');
+            
+            const groupSourceConnections = document.querySelectorAll('.connection-group-source');
+            const groupTargetConnections = document.querySelectorAll('.connection-group-target');
+            const connectionLabels = document.querySelectorAll('.connection-label');
+            
+            console.log(`Group connections: Source=${groupSourceConnections.length}, Target=${groupTargetConnections.length}, Labels=${connectionLabels.length}`);
+            
+            const hasGroupConnections = groupSourceConnections.length > 0 || groupTargetConnections.length > 0;
+            const hasLabels = connectionLabels.length > 0;
+            
+            if (hasGroupConnections && hasLabels) {
+                updateStatus('groups-status', 'success', `✅ PASS (${Math.max(groupSourceConnections.length, groupTargetConnections.length)} groups)`);
+                return true;
+            } else if (hasGroupConnections) {
+                updateStatus('groups-status', 'warning', '⚠️ PARTIAL (No labels)');
+                return false;
+            } else {
+                updateStatus('groups-status', 'error', '❌ FAIL (No group connections)');
+                return false;
+            }
+        }
+
+        function testTransformSync() {
+            console.log('🔄 Testing transform sync...');
+            
+            const connectionsGroup = document.querySelector('#connections-layer');
+            const tasksLayer = document.querySelector('#tasks-layer');
+            
+            if (!connectionsGroup || !tasksLayer) {
+                updateStatus('transform-status', 'error', '❌ FAIL (Missing layers)');
+                return false;
+            }
+            
+            const connectionsTransform = connectionsGroup.getAttribute('transform');
+            const tasksTransform = tasksLayer.getAttribute('transform');
+            
+            console.log(`Transform sync: Connections="${connectionsTransform}", Tasks="${tasksTransform}"`);
+            
+            if (connectionsTransform && tasksTransform && connectionsTransform === tasksTransform) {
+                updateStatus('transform-status', 'success', '✅ PASS (Synced)');
+                return true;
+            } else if (connectionsTransform && tasksTransform) {
+                updateStatus('transform-status', 'warning', '⚠️ PARTIAL (Different)');
+                return false;
+            } else {
+                updateStatus('transform-status', 'error', '❌ FAIL (No transforms)');
+                return false;
+            }
+        }
+
+        function runAllTests() {
+            console.log('🧪 Running all connection tests...');
+            
+            setTimeout(() => {
+                const qualityPass = testConnectionQuality();
+                const groupsPass = testGroupConnections();
+                const transformPass = testTransformSync();
+                
+                const allTestsPass = qualityPass && groupsPass && transformPass;
+                const partialPass = (qualityPass || groupsPass || transformPass) && !allTestsPass;
+                
+                if (allTestsPass) {
+                    updateStatus('overall-status', 'success', '🎉 ALL TESTS PASSED');
+                    console.log('🎉 SUCCESS: All three connection issues have been resolved!');
+                } else if (partialPass) {
+                    updateStatus('overall-status', 'warning', '⚠️ PARTIAL SUCCESS');
+                    console.log('⚠️ PARTIAL: Some connection issues resolved, others need work.');
+                } else {
+                    updateStatus('overall-status', 'error', '❌ TESTS FAILED');
+                    console.log('❌ FAILURE: Connection issues still need to be addressed.');
+                }
+                
+                // Test zoom behavior
+                setTimeout(() => {
+                    console.log('🔍 Testing zoom/pan behavior...');
+                    if (window.debugCanvas) {
+                        window.debugCanvas.zoom(1.3);
+                        setTimeout(() => {
+                            window.debugCanvas.zoom(0.8);
+                            setTimeout(() => testTransformSync(), 500);
+                        }, 1000);
+                    }
+                }, 2000);
+                
+            }, 3000);
+        }
+
+        // Initialize canvas
+        try {
+            console.log('🎬 Initializing WorkflowCanvas...');
+            const canvas = new WorkflowCanvas('workflow-container', portfolioData);
+            window.debugCanvas = canvas;
+            canvas.init();
+            
+            console.log('✅ WorkflowCanvas initialized successfully');
+            runAllTests();
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize WorkflowCanvas:', error);
+            updateStatus('overall-status', 'error', '❌ INIT FAILED');
+        }
+    </script>
+</body>
+</html>

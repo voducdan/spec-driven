@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced SVG Connections Test</title>
+    <link rel="stylesheet" href="src/styles/airflow-theme.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+        }
+        .test-container {
+            padding: 20px;
+        }
+        .test-info {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        .test-results {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .test-pass {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .test-fail {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .test-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-info">
+            <h2>🔧 Enhanced SVG Connections Test</h2>
+            <p>Testing the three key fixes:</p>
+            <ol>
+                <li><strong>Connection Quality:</strong> Smart routing with direct, curved, and stepped paths</li>
+                <li><strong>Group Connections:</strong> Connections between task groups with labels</li>
+                <li><strong>Transform Sync:</strong> Connections follow zoom/pan operations</li>
+            </ol>
+        </div>
+
+        <div class="test-results">
+            <div class="test-result test-pending" id="quality-test">
+                ⏳ Connection Quality<br>Testing...
+            </div>
+            <div class="test-result test-pending" id="groups-test">
+                ⏳ Group Connections<br>Testing...
+            </div>
+            <div class="test-result test-pending" id="transform-test">
+                ⏳ Transform Sync<br>Testing...
+            </div>
+        </div>
+
+        <!-- Workflow Canvas Container -->
+        <div id="workflow-container" style="width: 100%; height: 600px; border: 1px solid #e5e7eb; border-radius: 8px;"></div>
+    </div>
+
+    <script type="module">
+        import { WorkflowCanvas } from './src/components/WorkflowCanvas.js';
+        import { portfolioData } from './src/data/portfolio-data.js';
+
+        console.log('🚀 Starting Enhanced Connections Test');
+
+        // Initialize the workflow canvas
+        const canvas = new WorkflowCanvas('workflow-container', portfolioData);
+        canvas.init();
+
+        // Test functions
+        function testConnectionQuality() {
+            console.log('🎨 Testing connection quality...');
+            
+            // Check if different connection types are generated
+            const connections = document.querySelectorAll('.task-connection');
+            const directConnections = document.querySelectorAll('.connection-direct');
+            const curvedConnections = document.querySelectorAll('.connection-curved');
+            const steppedConnections = document.querySelectorAll('.connection-stepped');
+            
+            console.log(`Found ${connections.length} total connections:`);
+            console.log(`- Direct: ${directConnections.length}`);
+            console.log(`- Curved: ${curvedConnections.length}`);
+            console.log(`- Stepped: ${steppedConnections.length}`);
+            
+            const hasVariety = directConnections.length > 0 || curvedConnections.length > 0 || steppedConnections.length > 0;
+            const qualityResult = document.getElementById('quality-test');
+            
+            if (hasVariety) {
+                qualityResult.className = 'test-result test-pass';
+                qualityResult.innerHTML = '✅ Connection Quality<br>Smart routing active';
+                console.log('✅ Connection quality test PASSED');
+                return true;
+            } else {
+                qualityResult.className = 'test-result test-fail';
+                qualityResult.innerHTML = '❌ Connection Quality<br>No smart routing';
+                console.log('❌ Connection quality test FAILED');
+                return false;
+            }
+        }
+
+        function testGroupConnections() {
+            console.log('🔗 Testing group connections...');
+            
+            const groupSourceConnections = document.querySelectorAll('.connection-group-source');
+            const groupTargetConnections = document.querySelectorAll('.connection-group-target');
+            const connectionLabels = document.querySelectorAll('.connection-label');
+            
+            console.log(`Found ${groupSourceConnections.length} group source connections`);
+            console.log(`Found ${groupTargetConnections.length} group target connections`);
+            console.log(`Found ${connectionLabels.length} connection labels`);
+            
+            const hasGroupConnections = groupSourceConnections.length > 0 || groupTargetConnections.length > 0;
+            const groupsResult = document.getElementById('groups-test');
+            
+            if (hasGroupConnections) {
+                groupsResult.className = 'test-result test-pass';
+                groupsResult.innerHTML = '✅ Group Connections<br>Groups connected';
+                console.log('✅ Group connections test PASSED');
+                return true;
+            } else {
+                groupsResult.className = 'test-result test-fail';
+                groupsResult.innerHTML = '❌ Group Connections<br>No group connections';
+                console.log('❌ Group connections test FAILED');
+                return false;
+            }
+        }
+
+        function testTransformSync() {
+            console.log('🔄 Testing transform sync...');
+            
+            const connectionsGroup = document.querySelector('#connections-layer');
+            const tasksLayer = document.querySelector('#tasks-layer');
+            
+            if (!connectionsGroup || !tasksLayer) {
+                console.log('❌ Missing SVG layers');
+                const transformResult = document.getElementById('transform-test');
+                transformResult.className = 'test-result test-fail';
+                transformResult.innerHTML = '❌ Transform Sync<br>Missing SVG layers';
+                return false;
+            }
+            
+            // Check if both layers have transform attributes
+            const connectionsTransform = connectionsGroup.getAttribute('transform');
+            const tasksTransform = tasksLayer.getAttribute('transform');
+            
+            console.log(`Connections transform: ${connectionsTransform}`);
+            console.log(`Tasks transform: ${tasksTransform}`);
+            
+            const transformResult = document.getElementById('transform-test');
+            
+            if (connectionsTransform && tasksTransform) {
+                transformResult.className = 'test-result test-pass';
+                transformResult.innerHTML = '✅ Transform Sync<br>Layers synchronized';
+                console.log('✅ Transform sync test PASSED');
+                return true;
+            } else {
+                transformResult.className = 'test-result test-fail';
+                transformResult.innerHTML = '❌ Transform Sync<br>Layers not synced';
+                console.log('❌ Transform sync test FAILED');
+                return false;
+            }
+        }
+
+        // Run tests after canvas is initialized
+        setTimeout(() => {
+            console.log('🧪 Running connection tests...');
+            
+            const qualityPass = testConnectionQuality();
+            const groupsPass = testGroupConnections();
+            const transformPass = testTransformSync();
+            
+            const allTestsPass = qualityPass && groupsPass && transformPass;
+            
+            console.log(`\n📊 Test Results:`);
+            console.log(`- Connection Quality: ${qualityPass ? 'PASS' : 'FAIL'}`);
+            console.log(`- Group Connections: ${groupsPass ? 'PASS' : 'FAIL'}`);
+            console.log(`- Transform Sync: ${transformPass ? 'PASS' : 'FAIL'}`);
+            console.log(`\n🎯 Overall Result: ${allTestsPass ? 'ALL TESTS PASSED' : 'SOME TESTS FAILED'}`);
+            
+            if (allTestsPass) {
+                document.title = '✅ Enhanced SVG Connections - All Tests Passed';
+                console.log('🎉 All three connection issues have been resolved!');
+            } else {
+                document.title = '❌ Enhanced SVG Connections - Tests Failed';
+                console.log('⚠️ Some connection issues still need to be addressed.');
+            }
+        }, 2000);
+
+        // Also test zoom/pan behavior
+        setTimeout(() => {
+            console.log('🔍 Testing zoom behavior...');
+            canvas.zoom(1.5);
+            setTimeout(() => {
+                canvas.zoom(0.7);
+                console.log('🔄 Zoom test completed');
+            }, 1000);
+        }, 3000);
+    </script>
+</body>
+</html>

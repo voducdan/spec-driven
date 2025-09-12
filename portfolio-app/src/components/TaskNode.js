@@ -24,93 +24,59 @@ export class TaskNode {
     this.dependencies.push(taskId)
   }
 
+  updatePosition(x, y) {
+    if (this.element) {
+      // Position is now handled by transform for consistency with SVG
+      this.element.style.transform = `translate(${x}px, ${y}px)`;
+    }
+  }
+
   render(x = this.position.x, y = this.position.y) {
-    const node = document.createElement('div')
-    node.className = `task-node task-${this.type} status-${this.status}`
-    node.id = `task-${this.id}`
-    node.style.left = `${x}px`
-    node.style.top = `${y}px`
-    node.style.transform = 'scale(0)'
-    node.style.transformOrigin = 'top left'
-    node.style.transition = `all ${this.animationDuration}ms cubic-bezier(0.4, 0, 0.2, 1)`
+    const node = document.createElement('div');
+    node.className = `task-node task-${this.type} status-${this.status}`;
+    node.id = `task-${this.id}`;
+    node.dataset.id = this.id; // Add data-id for easier selection
+    
+    // Position is handled by transform. Set base position at 0,0.
+    node.style.position = 'absolute';
+    node.style.left = '0px';
+    node.style.top = '0px';
+    
+    // Set initial position via transform.
+    this.updatePosition(x, y);
+
+    node.style.transformOrigin = 'center';
+    node.style.transition = `transform 0.1s ease-out`;
 
     node.innerHTML = `
       <div class="task-header">
         <span class="task-icon">${this.getIcon()}</span>
         <span class="task-title">${this.title}</span>
-        <span class="task-expand-btn ${this.isExpanded ? 'expanded' : ''}" aria-label="Expand task">
-          <svg width="16" height="16" viewBox="0 0 16 16">
-            <path d="M8 3l4 5H4l4-5z" fill="currentColor"/>
-          </svg>
-        </span>
       </div>
       <div class="task-status">
         <span class="status-indicator"></span>
         <span class="status-text">${this.getStatusText()}</span>
       </div>
-      ${this.description ? `<div class="task-description">${this.description}</div>` : ''}
-      <div class="task-details ${this.isExpanded ? 'expanded' : 'collapsed'}">
-        ${this.renderDetails()}
-      </div>
-      <div class="task-actions">
-        <button class="action-btn view-btn" title="View Details">
-          <svg width="14" height="14" viewBox="0 0 16 16">
-            <path d="M8 2C4.5 2 1.8 4.1 1 8c.8 3.9 3.5 6 7 6s6.2-2.1 7-6c-.8-3.9-3.5-6-7-6zm0 10c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/>
-          </svg>
-        </button>
-        <button class="action-btn logs-btn" title="View Logs">
-          <svg width="14" height="14" viewBox="0 0 16 16">
-            <path d="M2 3h12v2H2V3zm0 4h12v2H2V7zm0 4h8v2H2v-2z" fill="currentColor"/>
-          </svg>
-        </button>
-      </div>
-    `
+    `;
 
     // Add event listeners
-    this.addEventListeners(node)
+    this.addEventListeners(node);
     
-    this.element = node
+    this.element = node;
     
-    // Animate in
-    setTimeout(() => {
-      node.style.transform = 'scale(1)'
-    }, 50)
-    
-    return node
+    return node;
   }
 
   addEventListeners(node) {
-    // Main click handler
+    // Main click handler for showing the modal
     node.addEventListener('click', (e) => {
-      if (!e.target.closest('.action-btn') && !e.target.closest('.task-expand-btn')) {
-        this.onClick()
-      }
-    })
-
-    // Expand/collapse handler
-    const expandBtn = node.querySelector('.task-expand-btn')
-    expandBtn.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.toggleExpand()
-    })
-
-    // Action button handlers
-    const viewBtn = node.querySelector('.view-btn')
-    const logsBtn = node.querySelector('.logs-btn')
-    
-    viewBtn.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.showDetailedView()
-    })
-    
-    logsBtn.addEventListener('click', (e) => {
-      e.stopPropagation()
-      this.showLogs()
-    })
+      e.stopPropagation();
+      this.showDetailedView();
+    });
 
     // Hover effects
-    node.addEventListener('mouseenter', () => this.onHover())
-    node.addEventListener('mouseleave', () => this.onHoverEnd())
+    node.addEventListener('mouseenter', () => this.onHover());
+    node.addEventListener('mouseleave', () => this.onHoverEnd());
   }
 
   getIcon() {
@@ -135,23 +101,36 @@ export class TaskNode {
   }
 
   renderDetails() {
-    const data = this.getPortfolioData()
-    if (!data) return '<p>No details available</p>'
+    if (!this.details) return '<p>No details available for this task.</p>';
 
-    switch (this.type) {
-      case 'education':
-        return this.renderEducationDetails(data)
-      case 'experience':
-        return this.renderExperienceDetails(data)
-      case 'skills':
-        return this.renderSkillsDetails(data)
-      case 'projects':
-        return this.renderProjectsDetails(data)
-      case 'certifications':
-        return this.renderCertificationsDetails(data)
-      default:
-        return '<p>Details not available</p>'
+    let detailsHtml = `<h1>${this.title}</h1>`;
+    detailsHtml += `<p><strong>Type:</strong> ${this.type}</p>`;
+    detailsHtml += `<p><strong>Status:</strong> ${this.status}</p>`;
+    if (this.description) {
+      detailsHtml += `<p>${this.description}</p>`;
     }
+
+    if (this.details) {
+      detailsHtml += '<h2>Details:</h2>';
+      for (const [key, value] of Object.entries(this.details)) {
+        if (Array.isArray(value)) {
+          detailsHtml += `<h3>${key.charAt(0).toUpperCase() + key.slice(1)}:</h3><ul>`;
+          value.forEach(item => {
+            detailsHtml += `<li>${item}</li>`;
+          });
+          detailsHtml += '</ul>';
+        } else if (typeof value === 'object' && value !== null) {
+          detailsHtml += `<h3>${key.charAt(0).toUpperCase() + key.slice(1)}:</h3>`;
+          for (const [subKey, subValue] of Object.entries(value)) {
+            detailsHtml += `<p><strong>${subKey}:</strong> ${subValue}</p>`;
+          }
+        } else {
+          detailsHtml += `<p><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${value}</p>`;
+        }
+      }
+    }
+    
+    return detailsHtml;
   }
 
   renderEducationDetails(education) {
@@ -310,143 +289,35 @@ export class TaskNode {
   }
 
   showDetailedView() {
-    const modal = this.createModal()
-    document.body.appendChild(modal)
+    const modal = document.createElement('div');
+    modal.className = 'task-modal';
     
-    // Animate modal in
-    setTimeout(() => {
-      modal.classList.add('show')
-    }, 10)
-  }
-
-  createModal() {
-    const modal = document.createElement('div')
-    modal.className = 'task-modal'
-    modal.innerHTML = `
-      <div class="modal-backdrop"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>${this.getIcon()} ${this.title}</h2>
-          <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="task-info">
-            <p><strong>Type:</strong> ${this.type}</p>
-            <p><strong>Status:</strong> ${this.getStatusText()}</p>
-            <p><strong>Dependencies:</strong> ${this.dependencies.length > 0 ? this.dependencies.join(', ') : 'None'}</p>
-          </div>
-          <div class="task-content">
-            ${this.renderFullDetails()}
-          </div>
-        </div>
-      </div>
-    `
-
-    // Add close functionality
-    modal.querySelector('.modal-close').addEventListener('click', () => this.closeModal(modal))
-    modal.querySelector('.modal-backdrop').addEventListener('click', () => this.closeModal(modal))
+    const modalContent = document.createElement('div');
+    modalContent.className = 'task-modal-content';
     
-    return modal
-  }
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'close-button';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => {
+      document.body.removeChild(modal);
+    };
+    
+    modalContent.innerHTML = this.renderDetails();
+    modalContent.prepend(closeBtn);
+    modal.appendChild(modalContent);
+    
+    document.body.appendChild(modal);
 
-  renderFullDetails() {
-    const data = this.getPortfolioData()
-    if (!data) return '<p>No details available</p>'
-
-    switch (this.type) {
-      case 'education':
-        return data.map(edu => `
-          <div class="full-detail-item">
-            <h3>${edu.institution}</h3>
-            <p><strong>${edu.degree}</strong> in ${edu.field}</p>
-            <p><em>${edu.year}</em> | GPA: ${edu.gpa || 'N/A'}</p>
-            <p>${edu.details}</p>
-          </div>
-        `).join('')
-      case 'experience':
-        return data.map(exp => `
-          <div class="full-detail-item">
-            <h3>${exp.company}</h3>
-            <p><strong>${exp.position}</strong> | <em>${exp.duration}</em></p>
-            <h4>Responsibilities:</h4>
-            <ul>${exp.responsibilities.map(resp => `<li>${resp}</li>`).join('')}</ul>
-            <h4>Technologies:</h4>
-            <div class="tech-tags">${exp.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}</div>
-          </div>
-        `).join('')
-      case 'skills':
-        return Object.entries(data).map(([key, skill]) => `
-          <div class="full-detail-item">
-            <h3>${skill.category}</h3>
-            <div class="skill-bar-full">
-              <div class="skill-progress" style="width: ${skill.proficiency}%"></div>
-              <span class="skill-percentage">${skill.proficiency}%</span>
-            </div>
-            <div class="skill-items-full">${skill.items.map(item => `<span class="skill-tag">${item}</span>`).join('')}</div>
-          </div>
-        `).join('')
-      case 'projects':
-        return data.map(project => `
-          <div class="full-detail-item">
-            <h3>${project.title}</h3>
-            ${project.company ? `<p><strong>Company:</strong> ${project.company}</p>` : ''}
-            <p>${project.description}</p>
-            <h4>Key Highlights:</h4>
-            <ul>${project.highlights.map(highlight => `<li>${highlight}</li>`).join('')}</ul>
-            <h4>Technologies:</h4>
-            <div class="tech-tags">${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}</div>
-          </div>
-        `).join('')
-      case 'certifications':
-        return data.map(cert => `
-          <div class="full-detail-item">
-            <h3>${cert.name}</h3>
-            <p><strong>Issuer:</strong> ${cert.issuer}</p>
-            <p><strong>Year:</strong> ${cert.year}</p>
-          </div>
-        `).join('')
-      default:
-        return '<p>Details not available</p>'
-    }
-  }
-
-  closeModal(modal) {
-    modal.classList.remove('show')
-    setTimeout(() => {
-      document.body.removeChild(modal)
-    }, 300)
+    // Close modal on outside click
+    window.onclick = (event) => {
+      if (event.target === modal) {
+        document.body.removeChild(modal);
+      }
+    };
   }
 
   showLogs() {
-    const logData = this.generateLogData()
-    const modal = document.createElement('div')
-    modal.className = 'task-modal logs-modal'
-    modal.innerHTML = `
-      <div class="modal-backdrop"></div>
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>📊 Task Logs: ${this.title}</h2>
-          <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="logs-container">
-            ${logData.map(log => `
-              <div class="log-entry log-${log.level}">
-                <span class="log-time">${log.time}</span>
-                <span class="log-level">[${log.level.toUpperCase()}]</span>
-                <span class="log-message">${log.message}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    `
-
-    modal.querySelector('.modal-close').addEventListener('click', () => this.closeModal(modal))
-    modal.querySelector('.modal-backdrop').addEventListener('click', () => this.closeModal(modal))
-    
-    document.body.appendChild(modal)
-    setTimeout(() => modal.classList.add('show'), 10)
+    console.log(`--- Logs for ${this.title} ---`);
   }
 
   generateLogData() {

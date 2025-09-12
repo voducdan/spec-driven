@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Connection Test</title>
+    <link rel="stylesheet" href="src/styles/airflow-theme.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #e5e7eb;
+        }
+        .header {
+            background: #111827;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #374151;
+        }
+        .workflow-container {
+            height: 70vh;
+            background: #f9fafb;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+        }
+        .debug-panel {
+            background: #111827;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-family: monospace;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Manual Enhanced Connections Test</h1>
+        <p>Open browser console for detailed output</p>
+        <button class="test-button" onclick="manualConnectionTest()">🧪 Run Test</button>
+        <button class="test-button" onclick="window.debugCanvas?.zoom(1.2)">🔍 Zoom In</button>
+        <button class="test-button" onclick="window.debugCanvas?.zoom(0.8)">🔍 Zoom Out</button>
+        <button class="test-button" onclick="window.debugCanvas?.autoLayoutTasks()">📐 Auto Layout</button>
+    </div>
+
+    <div id="workflow-container" class="workflow-container"></div>
+
+    <div class="debug-panel">
+        <div id="debug-output">
+            🔍 Debug output will appear here and in the browser console...
+        </div>
+    </div>
+
+    <!-- Load manual test script -->
+    <script src="manual-test.js"></script>
+
+    <!-- Initialize canvas -->
+    <script type="module">
+        import { WorkflowCanvas } from './src/components/WorkflowCanvas.js';
+        import { portfolioData } from './src/data/portfolio-data.js';
+
+        console.log('🚀 Initializing Manual Test Canvas...');
+        
+        try {
+            const canvas = new WorkflowCanvas('workflow-container', portfolioData);
+            window.debugCanvas = canvas;
+            
+            canvas.init();
+            console.log('✅ Canvas initialized for manual testing');
+            
+            // Update debug panel with results
+            setTimeout(() => {
+                const results = manualConnectionTest();
+                const debugOutput = document.getElementById('debug-output');
+                debugOutput.innerHTML = `
+                    <div style="color: #10b981; font-weight: bold;">🔧 Manual Test Results:</div>
+                    <div>Basic Connections: ${results.hasConnections ? '✅' : '❌'}</div>
+                    <div>Smart Routing: ${results.hasSmartRouting ? '✅' : '❌'}</div>
+                    <div>Group Connections: ${results.hasGroupConnections ? '✅' : '❌'}</div>
+                    <div>Connection Labels: ${results.hasLabels ? '✅' : '❌'}</div>
+                    <div>Transform Sync: ${results.hasTransforms ? '✅' : '❌'}</div>
+                    <div style="margin-top: 10px; color: ${results.allPass ? '#10b981' : '#ef4444'}; font-weight: bold;">
+                        ${results.allPass ? '🎉 ALL TESTS PASSED!' : '⚠️ SOME ISSUES REMAIN'}
+                    </div>
+                    <div style="margin-top: 10px; font-size: 11px; opacity: 0.7;">
+                        Check browser console for detailed output
+                    </div>
+                `;
+            }, 5000);
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize canvas:', error);
+        }
+    </script>
+</body>
+</html>

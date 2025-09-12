@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Before/After SVG Position Test</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f0f0f0; }
+        .comparison { display: flex; height: 100vh; }
+        .test-panel { flex: 1; position: relative; border: 2px solid #333; }
+        .panel-title { 
+            position: absolute; top: 10px; left: 10px; 
+            background: rgba(0,0,0,0.8); color: white; 
+            padding: 5px 10px; border-radius: 4px; z-index: 100;
+        }
+        
+        /* BEFORE (BROKEN) - SVG inside transformed container */
+        .broken-container { position: relative; width: 100%; height: 100%; }
+        .broken-tasks-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            transform: translate(50px, 30px) scale(1.2); /* This breaks SVG positioning */
+            transform-origin: top left;
+        }
+        .broken-svg { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+        
+        /* AFTER (FIXED) - SVG outside transformed container */
+        .fixed-container { position: relative; width: 100%; height: 100%; }
+        .fixed-svg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+        .fixed-tasks-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            transform: translate(50px, 30px) scale(1.2); /* SVG not affected */
+            transform-origin: top left;
+        }
+        
+        .task { 
+            position: absolute; width: 120px; height: 60px;
+            background: white; border: 2px solid #333; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 12px;
+        }
+        
+        .connection { stroke: #e74c3c; stroke-width: 3; fill: none; }
+    </style>
+</head>
+<body>
+    <div class="comparison">
+        <!-- BEFORE: BROKEN (SVG inside transformed layer) -->
+        <div class="test-panel" style="background: #ffebee;">
+            <div class="panel-title">❌ BEFORE (BROKEN): SVG inside transformed layer</div>
+            <div class="broken-container">
+                <div class="broken-tasks-layer">
+                    <svg class="broken-svg" width="100%" height="100%">
+                        <g id="broken-connections">
+                            <!-- Connections will be drawn here but coordinates will be wrong -->
+                        </g>
+                    </svg>
+                    <div class="task" id="broken-task1" style="left: 100px; top: 100px;">Task 1</div>
+                    <div class="task" id="broken-task2" style="left: 300px; top: 150px;">Task 2</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AFTER: FIXED (SVG outside transformed layer) -->
+        <div class="test-panel" style="background: #e8f5e8;">
+            <div class="panel-title">✅ AFTER (FIXED): SVG outside transformed layer</div>
+            <div class="fixed-container">
+                <svg class="fixed-svg" width="100%" height="100%">
+                    <g id="fixed-connections">
+                        <!-- Connections will be drawn here with correct coordinates -->
+                    </g>
+                </svg>
+                <div class="fixed-tasks-layer">
+                    <div class="task" id="fixed-task1" style="left: 100px; top: 100px;">Task 1</div>
+                    <div class="task" id="fixed-task2" style="left: 300px; top: 150px;">Task 2</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function drawConnection(fromElement, toElement, containerElement, svgGroup, label) {
+            // Get bounding rectangles
+            const fromRect = fromElement.getBoundingClientRect();
+            const toRect = toElement.getBoundingClientRect();
+            const containerRect = containerElement.getBoundingClientRect();
+            
+            // Calculate connection points
+            const fromX = (fromRect.left - containerRect.left) + fromRect.width;
+            const fromY = (fromRect.top - containerRect.top) + fromRect.height / 2;
+            const toX = toRect.left - containerRect.left;
+            const toY = (toRect.top - containerRect.top) + toRect.height / 2;
+            
+            console.log(`${label}: from(${fromX.toFixed(1)}, ${fromY.toFixed(1)}) to(${toX.toFixed(1)}, ${toY.toFixed(1)})`);
+            
+            // Create path
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${fromX} ${fromY} L ${toX} ${toY}`;
+            path.setAttribute('d', d);
+            path.setAttribute('class', 'connection');
+            
+            svgGroup.appendChild(path);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Before/After SVG Position Test');
+            
+            // Wait for layout to complete
+            setTimeout(() => {
+                // BROKEN: Draw connection using tasks-layer as reference (WRONG)
+                const brokenContainer = document.querySelector('.broken-tasks-layer'); // Wrong reference!
+                const brokenTask1 = document.getElementById('broken-task1');
+                const brokenTask2 = document.getElementById('broken-task2');
+                const brokenSvg = document.getElementById('broken-connections');
+                
+                drawConnection(brokenTask1, brokenTask2, brokenContainer, brokenSvg, '❌ BROKEN');
+                
+                // FIXED: Draw connection using main container as reference (CORRECT)
+                const fixedContainer = document.querySelector('.fixed-container'); // Correct reference!
+                const fixedTask1 = document.getElementById('fixed-task1');
+                const fixedTask2 = document.getElementById('fixed-task2');
+                const fixedSvg = document.getElementById('fixed-connections');
+                
+                drawConnection(fixedTask1, fixedTask2, fixedContainer, fixedSvg, '✅ FIXED');
+                
+                console.log('🎯 Compare the two panels - the right one should show correct connection positioning');
+            }, 100);
+        });
+    </script>
+</body>
+</html>
