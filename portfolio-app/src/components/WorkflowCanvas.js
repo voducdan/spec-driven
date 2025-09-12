@@ -231,11 +231,9 @@ export class WorkflowCanvas {
       this.canvas.style.cursor = 'default'
     })
 
-    this.canvas.addEventListener('wheel', (e) => {
-      e.preventDefault()
-      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1
-      this.zoom(zoomFactor, { x: e.clientX, y: e.clientY })
-    })
+    // NOTE: Wheel zoom disabled to prevent conflicts with scroll-based individual component scaling
+    // Individual components scale based on viewport position via handleScroll() method
+    // Zoom can still be controlled via zoom in/out buttons which call zoom() method directly
   }
 
   handleScroll() {
@@ -755,8 +753,8 @@ export class WorkflowCanvas {
     const transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.scale})`
     this.tasksLayer.style.transform = transform
     this.connectionsLayer.style.transform = transform
-    // Also apply to main canvas for tests
-    this.canvas.style.transform = `scale(${this.scale})`
+    // NOTE: Removed canvas scaling to avoid conflicts with scroll-based individual component scaling
+    // Individual tasks and groups are scaled via handleScroll() method instead
   }
 
   fitToScreen() {
