@@ -189,7 +189,16 @@ export class WorkflowCanvas {
       console.log('Details toggle clicked - sidebar functionality can be added later')
     })
 
-    this.canvas.addEventListener('scroll', () => this.handleScroll())
+    // Enhanced scroll handling for smooth scaling
+    const tasksLayer = this.tasksLayer || this.container.querySelector('.tasks-layer')
+    if (tasksLayer) {
+      tasksLayer.addEventListener('scroll', () => this.handleScroll(), { passive: true })
+      console.log('✅ Enhanced scroll listener attached to tasks layer')
+    } else {
+      // Fallback to canvas scroll
+      this.canvas.addEventListener('scroll', () => this.handleScroll(), { passive: true })
+      console.log('✅ Fallback scroll listener attached to canvas')
+    }
   }
 
   setupPanAndZoom() {
@@ -232,28 +241,82 @@ export class WorkflowCanvas {
   handleScroll() {
     if (!this.canvas) return
 
-    const viewportTop = this.canvas.scrollTop
-    const viewportHeight = this.canvas.clientHeight
-    const viewportCenter = viewportTop + viewportHeight / 2
+    const tasksLayer = this.tasksLayer || this.canvas.querySelector('.tasks-layer')
+    if (!tasksLayer) return
 
-    const maxDistance = viewportHeight / 2
-    const minScale = 0.7
-    const maxScale = 1.0
+    const scrollTop = tasksLayer.scrollTop
+    const scrollLeft = tasksLayer.scrollLeft
+    const viewportHeight = tasksLayer.clientHeight
+    const viewportWidth = tasksLayer.clientWidth
+    const viewportCenterY = scrollTop + viewportHeight / 2
+    const viewportCenterX = scrollLeft + viewportWidth / 2
 
-    this.tasks.forEach(({ task, y }) => {
+    // Enhanced distance calculation for more responsive scaling
+    const maxDistance = Math.min(viewportHeight, viewportWidth) / 2
+    const minScale = 0.5
+    const maxScale = 1.2
+    const centerScale = 1.4 // Larger scale for items in the center
+
+    this.tasks.forEach(({ task, x, y }) => {
       if (task.element) {
-        const taskCenter = y + task.element.offsetHeight / 2
-        const distance = Math.abs(viewportCenter - taskCenter)
+        const taskCenterX = x + task.element.offsetWidth / 2
+        const taskCenterY = y + task.element.offsetHeight / 2
+        
+        // Calculate distance from viewport center using both X and Y
+        const distanceX = Math.abs(viewportCenterX - taskCenterX)
+        const distanceY = Math.abs(viewportCenterY - taskCenterY)
+        const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
 
         let scale
-        if (distance >= maxDistance) {
+        if (distance <= maxDistance / 4) {
+          // Items in the center get the largest scale
+          scale = centerScale
+        } else if (distance >= maxDistance) {
+          // Items far from center get minimum scale
           scale = minScale
         } else {
-          // Calculate scale linearly from maxScale to minScale
-          scale = maxScale - (distance / maxDistance) * (maxScale - minScale)
+          // Smooth transition between center and edge
+          const normalizedDistance = (distance - maxDistance / 4) / (maxDistance - maxDistance / 4)
+          scale = centerScale - normalizedDistance * (centerScale - minScale)
         }
         
+        // Apply smooth scaling with easing
         task.setScale(scale)
+        
+        // Add subtle opacity change based on distance
+        const opacity = Math.max(0.6, 1 - (distance / maxDistance) * 0.4)
+        if (task.element) {
+          task.element.style.opacity = opacity
+        }
+      }
+    })
+
+    // Also handle groups if they exist
+    this.groups.forEach(({ group, x, y }) => {
+      if (group.element) {
+        const groupCenterX = x + group.element.offsetWidth / 2
+        const groupCenterY = y + group.element.offsetHeight / 2
+        
+        const distanceX = Math.abs(viewportCenterX - groupCenterX)
+        const distanceY = Math.abs(viewportCenterY - groupCenterY)
+        const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
+
+        let scale
+        if (distance <= maxDistance / 4) {
+          scale = centerScale * 0.9 // Slightly smaller than tasks
+        } else if (distance >= maxDistance) {
+          scale = minScale
+        } else {
+          const normalizedDistance = (distance - maxDistance / 4) / (maxDistance - maxDistance / 4)
+          scale = (centerScale * 0.9) - normalizedDistance * ((centerScale * 0.9) - minScale)
+        }
+        
+        // Apply scaling to group
+        group.element.style.transform = `scale(${scale})`
+        
+        // Add opacity change
+        const opacity = Math.max(0.6, 1 - (distance / maxDistance) * 0.4)
+        group.element.style.opacity = opacity
       }
     })
   }

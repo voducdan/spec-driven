@@ -75,12 +75,98 @@ async function initPortfolio() {
   try {
     console.log('📊 Portfolio data:', portfolioData.personal.name)
     
-    // Create DAG visualization layout
+    // Create full-screen DAG visualization layout
     app.innerHTML = `
-      <div id="workflow-canvas" style="width: 100%; height: 100vh;"></div>
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+        z-index: 0;
+      ">
+        <div style="
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          right: 20px;
+          z-index: 1000;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: rgba(255,255,255,0.1);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 12px;
+          padding: 1rem 2rem;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        ">
+          <div>
+            <h1 style="
+              font-size: 1.8rem;
+              font-weight: 700;
+              margin: 0;
+              background: linear-gradient(135deg, #60a5fa, #34d399);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+            ">🌟 ${portfolioData.personal.name} - Portfolio DAG</h1>
+            <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.25rem;">
+              Interactive Data Engineering Portfolio • Scroll to scale components
+            </div>
+          </div>
+          <div style="
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+          ">
+            <button onclick="showSimpleView()" style="
+              background: rgba(255,255,255,0.2);
+              color: white;
+              border: 1px solid rgba(255,255,255,0.3);
+              padding: 8px 16px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              transition: all 0.2s ease;
+            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+               onmouseout="this.style.background='rgba(255,255,255,0.2)'">📄 Simple View</button>
+            <button onclick="window.location.reload()" style="
+              background: rgba(255,255,255,0.2);
+              color: white;
+              border: 1px solid rgba(255,255,255,0.3);
+              padding: 8px 16px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              transition: all 0.2s ease;
+            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+               onmouseout="this.style.background='rgba(255,255,255,0.2)'">🔄 Refresh</button>
+          </div>
+        </div>
+        
+        <div style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          overflow: hidden;
+        ">
+          <div id="workflow-canvas" style="
+            width: 100%;
+            height: 100%;
+            position: relative;
+          "></div>
+        </div>
+      </div>
     `
 
-    console.log('✅ DAG layout created, initializing WorkflowCanvas...')
+    console.log('✅ Full-screen DAG layout created, initializing WorkflowCanvas...')
 
     // Initialize the WorkflowCanvas with error handling
     const canvas = new WorkflowCanvas('workflow-canvas')
