@@ -1770,15 +1770,16 @@ window.inspectSVG = function() {
     const svg = instance.connectionsLayer;
     const group = instance.connectionsGroup;
     
-    
     const paths = group.querySelectorAll('path');
     paths.forEach((path, index) => {
+      const pathInfo = {
         d: path.getAttribute('d'),
         stroke: path.getAttribute('stroke'),
         strokeWidth: path.getAttribute('stroke-width'),
         boundingRect: path.getBoundingClientRect()
-      });
+      };
     });
   } else {
+    console.warn('No workflow instance found');
   }
 }
