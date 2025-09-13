@@ -242,7 +242,6 @@ export const portfolioData = {
         title: 'Education',
         type: 'group',
         status: 'success',
-        dependencies: ['king'],
         position: { x: 250, y: 400 },
         description: 'Foundation of knowledge',
         isGroup: true,
@@ -252,12 +251,11 @@ export const portfolioData = {
         title: 'Bachelor Information Technology',
         type: 'education',
         status: 'success',
-        dependencies: ['group-education'],
+        dependencies: ['king'],
         position: { x: 450, y: 400 },
         description: 'HCM University of Science (8/2017 - 10/2021)',
         details: {
           institution: 'HCM University of Science',
-          degree: 'Bachelor Information Technology',
           gpa: '7.3/10',
           duration: '8/2017 - 10/2021'
         },
@@ -270,7 +268,6 @@ export const portfolioData = {
         title: 'Experience',
         type: 'group',
         status: 'success',
-        dependencies: ['edu-bachelor'],
         position: { x: 650, y: 400 },
         description: 'Professional journey',
         isGroup: true,
@@ -280,7 +277,7 @@ export const portfolioData = {
         title: 'Data Engineer at MoMo',
         type: 'experience',
         status: 'success',
-        dependencies: ['group-experience'],
+        dependencies: ['edu-bachelor'],
         position: { x: 850, y: 150 },
         description: 'Current role: Airflow on K8S, Spark, ClickHouse',
         group: 'group-experience',
@@ -295,7 +292,7 @@ export const portfolioData = {
         title: 'Data Engineer at Amanotes',
         type: 'experience',
         status: 'success',
-        dependencies: ['group-experience'],
+        dependencies: ['edu-bachelor'],
         position: { x: 850, y: 300 },
         description: 'Event data modeling, API integration, DBT transforms',
         group: 'group-experience',
@@ -310,7 +307,7 @@ export const portfolioData = {
         title: 'Data Engineer at FPT Software',
         type: 'experience',
         status: 'success',
-        dependencies: ['group-experience'],
+        dependencies: ['edu-bachelor'],
         position: { x: 850, y: 450 },
         description: 'ETL pipelines and data modeling',
         group: 'group-experience',
@@ -325,7 +322,7 @@ export const portfolioData = {
         title: 'Data Engineer at ACB',
         type: 'experience',
         status: 'success',
-        dependencies: ['group-experience'],
+        dependencies: ['edu-bachelor'],
         position: { x: 850, y: 600 },
         description: 'Data infrastructure and data lineage',
         group: 'group-experience',
@@ -342,11 +339,7 @@ export const portfolioData = {
         title: 'Projects',
         type: 'group',
         status: 'success',
-        dependencies: [
-          {from: 'group-experience', label: 'Enabled by'},
-          {from: 'exp-momo', label: 'Built at'},
-          {from: 'exp-amanotes', label: 'Developed at'}
-        ],
+        dependencies: [],
         position: { x: 1100, y: 400 },
         description: 'Key accomplishments',
         isGroup: true,
@@ -356,50 +349,104 @@ export const portfolioData = {
         title: 'Airflow on Kubernetes',
         type: 'projects',
         status: 'success',
-        dependencies: [{from: 'exp-momo', label: 'Developed at'}],
+        dependencies: ['exp-momo'],
         position: { x: 1300, y: 100 },
         description: 'Scaled Airflow to serve 3,000+ DAGs on K8S',
         group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Operate and scale Airflow on Kubernetes to serve over 3,000 DAGs, ensuring tasks meet their SLA by running on time. Guarantee DAG files are updated and reflected on the Airflow UI with a P90 latency of less than 15 seconds. Leverage advanced Airflow features such as Pools, Queues, Priority Weights, and Cluster Policies to optimize resource utilization and isolate workloads across multiple teams. Set up CI pipelines using Gitlab CI to test and sync DAG code from GitLab to Airflow, and build a development environment for users to validate their code before deployment'
+        }
       },
       {
         id: 'proj-batch-ingestion',
         title: 'Spark Batch Ingestion Tool',
         type: 'projects',
         status: 'success',
-        dependencies: [{from: 'exp-momo', label: 'Developed at'}],
-        position: { x: 1300, y: 220 },
+        dependencies: ['exp-momo'],
+        position: { x: 1300, y: 250 },
         description: 'Comprehensive batch ingestion with Spark on K8S',
         group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Developed a tool to support batch ingestion from various data sources using Spark on K8S. Took part in all stages of the development lifecycle, including ideation, coding, infrastructure setup, and UI development. Implemented solutions such as Kubernetes Admission Control and secret management to monitor and secure data ingestion jobs, ensuring data security and access control.'
+        }
       },
       {
         id: 'proj-clickhouse-streaming',
         title: 'ClickHouse Real-time Analytics',
         type: 'projects',
         status: 'success',
-        dependencies: [{from: 'exp-momo', label: 'Developed at'}],
-        position: { x: 1300, y: 340 },
+        dependencies: ['exp-momo'],
+        position: { x: 1300, y: 400 },
         description: 'Real-time reporting with 5-minute update frequency',
         group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Proposed and implemented a new solution to increase the report update frequency for critical requests from  once per day to every 5 minutes by setting up ClickHouse Kafka Connect to stream data into ClickHouse.  Leveraged ClickHouse features such as the ReplacingMergeTree engine, materialized views, materialized columns, and function combinators to deduplicate data and perform pre-aggregation, significantly reducing  the load on transformation processes and dashboard queries.'
+        }
       },
       {
         id: 'proj-lakehouse',
-        title: 'Lakehouse Architecture',
+        title: 'Implement Lakehouse Architecture',
         type: 'projects',
         status: 'success',
-        dependencies: [{from: 'exp-momo', label: 'Developed at'}],
-        position: { x: 1300, y: 460 },
-        description: 'Medallion architecture with Spark and Iceberg',
+        dependencies: ['exp-momo'],
+        position: { x: 1300, y: 550 },
+        description: 'Implement Lakehouse Architecture',
         group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Designed and developed a lakehouse system based on the medallion architecture using Spark, Iceberg, Hive Metastore, and Google Cloud Storage (GCS).'
+        }
       },
       {
-        id: 'proj-pulumi',
-        title: 'Infrastructure as Code',
+        id: 'proj-iac',
+        title: 'Managed infrastructure with Pulumi',
         type: 'projects',
-        status: 'running',
-        dependencies: [{from: 'exp-momo', label: 'Developed at'}],
-        position: { x: 1300, y: 580 },
-        description: 'Managed K8s infrastructure with Pulumi',
+        status: 'success',
+        dependencies: ['exp-momo'],
+        position: { x: 1300, y: 700 },
+        description: 'Managed infrastructure with Pulumi',
         group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Managed infrastructure on Kubernetes in an Infrastructure-as-Code (IaC) approach using Pulumi.'
+        }
+      },
+      {
+        id: 'proj-data-model',
+        title: 'Data modeling',
+        type: 'projects',
+        status: 'success',
+        dependencies: ['exp-amanotes'],
+        position: { x: 1300, y: 850 },
+        description: 'Designed data models for event data from games',
+        group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Designed data models for event data from games. Crawled/pulled data from partners’ APIs/Dashboards. Applied DBT for transforming raw data from firebase'
+        }
+      },
+      {
+        id: 'proj-etl',
+        title: 'Build ETL pipelines',
+        type: 'projects',
+        status: 'success',
+        dependencies: ['exp-fpt'],
+        position: { x: 1300, y: 1000 },
+        description: 'Created data pipelines to extract, transform and load large datasets from csv files into the data warehouse',
+        group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Created data pipelines to extract, transform and load large datasets from csv files into the data warehouse. Designed and developed data models.  Participated in building the infrastructure required for optimal extraction, transformation, and loading processes'
+        }
+      },
+      {
+        id: 'proj-data-enrich',
+        title: 'Data Enrichment',
+        type: 'projects',
+        status: 'success',
+        dependencies: ['exp-acb'],
+        position: { x: 1300, y: 1150 },
+        description: 'Crawled and enriched data for analytical purposes',
+        group: 'group-projects',
+        details: {
+          "Main responsibilities": 'Crawled and enriched data for analytical purposes. Built data lineage to quickly identify the source tables of reports'
+        }
       },
 
       // Skills Group
@@ -407,8 +454,7 @@ export const portfolioData = {
         id: 'group-skills',
         title: 'Skills',
         type: 'group',
-        status: 'success',
-        dependencies: ['group-projects'], // Connect from projects group
+        status: 'running',
         position: { x: 1550, y: 400 },
         description: 'Technical capabilities',
         isGroup: true,
@@ -418,41 +464,83 @@ export const portfolioData = {
         title: 'Technical Skills',
         type: 'skills',
         status: 'running',
-        dependencies: ['group-skills'],
+        dependencies: ['group-projects'],
         position: { x: 1750, y: 150 },
         description: 'Spark, SQL, Data Modeling, ClickHouse, GCP, K8S, Docker, Airflow',
         group: 'group-skills',
+        details: {
+          "Stacks": 'Spark, SQL, Data Modeling, Clickhouse, GCP, K8S, Docker, Airflow, Linux, Git'
+        }
       },
       {
         id: 'skills-programming',
         title: 'Programming',
         type: 'skills',
-        status: 'success',
-        dependencies: ['group-skills'],
+        status: 'running',
+        dependencies: ['group-projects'],
         position: { x: 1750, y: 300 },
         description: 'Python, Javascript, OOP, Data Structures and Algorithms',
         group: 'group-skills',
+        details: {
+          "Stacks": 'Python, Javascript, OOP, Data Structures and Algorithms'
+        }
       },
       {
         id: 'skills-data',
         title: 'Data Engineering Tools',
         type: 'skills',
         status: 'running',
-        dependencies: ['group-skills'],
+        dependencies: ['group-projects'],
         position: { x: 1750, y: 450 },
         description: 'Apache Airflow, Apache Spark, Kafka, DBT, Hadoop',
         group: 'group-skills',
+        details: {
+          "Stacks": 'Apache Airflow, Apache Spark, Kafka, DBT, Hadoop'
+        }
       },
       {
         id: 'skills-cloud',
         title: 'Cloud & Infra',
         type: 'skills',
-        status: 'success',
-        dependencies: ['group-skills'],
+        status: 'running',
+        dependencies: ['group-projects'],
         position: { x: 1750, y: 600 },
         description: 'GCP, Kubernetes, Docker, Pulumi, Infrastructure-as-Code',
         group: 'group-skills',
+        details: {
+          "Stacks": 'GCP, Kubernetes, Docker, Pulumi, Infrastructure-as-Code'
+        }
       },
+      // Certs Group
+      {
+        id: 'group-certs',
+        title: 'Certificates',
+        type: 'group',
+        status: 'success',
+        position: { x: 1750, y: 400 },
+        description: 'Certificates',
+        isGroup: true,
+      },
+      {
+        id: 'certs-clickhouse',
+        title: 'ClickHouse Certified Developer',
+        type: 'certs',
+        status: 'success',
+        dependencies: ['group-projects'],
+        position: { x: 1750, y: 950 },
+        description: 'ClickHouse Certified Developer',
+        group: 'group-certs',
+      },
+      {
+        id: 'certs-gcp-pde',
+        title: 'GCP Professional Data Engineer',
+        type: 'certs',
+        status: 'success',
+        dependencies: ['group-projects'],
+        position: { x: 1750, y: 1100 },
+        description: 'GCP Professional Data Engineer',
+        group: 'group-certs',
+      }
     ],
   },
 }

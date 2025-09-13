@@ -25,10 +25,9 @@ export class TaskNode {
   }
 
   updatePosition(x, y) {
-    if (this.element) {
-      // Position is now handled by transform for consistency with SVG
-      this.element.style.transform = `translate(${x}px, ${y}px)`;
-    }
+    this.position.x = x;
+    this.position.y = y;
+    this.applyTransform();
   }
 
   render(x = this.position.x, y = this.position.y) {
@@ -42,10 +41,13 @@ export class TaskNode {
     node.style.left = '0px';
     node.style.top = '0px';
     
-    // Set initial position via transform.
-    this.updatePosition(x, y);
+    this.element = node;
+    
+    // Set initial position
+    this.position.x = x;
+    this.position.y = y;
 
-    node.style.transformOrigin = 'center';
+    node.style.transformOrigin = 'top left';
     node.style.transition = `transform 0.1s ease-out`;
 
     node.innerHTML = `
@@ -64,13 +66,16 @@ export class TaskNode {
     
     this.element = node;
     
+    // Apply initial transform
+    this.applyTransform();
+    
     return node;
   }
 
   addEventListeners(node) {
     // Main click handler for showing the modal
     node.addEventListener('click', (e) => {
-      e.stopPropagation();
+      // e.stopPropagation();
       this.showDetailedView();
     });
 
@@ -104,11 +109,6 @@ export class TaskNode {
     if (!this.details) return '<p>No details available for this task.</p>';
 
     let detailsHtml = `<h1>${this.title}</h1>`;
-    detailsHtml += `<p><strong>Type:</strong> ${this.type}</p>`;
-    detailsHtml += `<p><strong>Status:</strong> ${this.status}</p>`;
-    if (this.description) {
-      detailsHtml += `<p>${this.description}</p>`;
-    }
 
     if (this.details) {
       detailsHtml += '<h2>Details:</h2>';
@@ -270,7 +270,6 @@ export class TaskNode {
   onHoverEnd() {
     this.hoverScale = 1
     this.applyTransform()
-    this.element.style.zIndex = 'auto'
   }
 
   setScale(scale) {
@@ -280,11 +279,13 @@ export class TaskNode {
 
   applyTransform() {
     if (this.element) {
-      const finalScale = this.scale * this.hoverScale
+      const finalScale = this.scale * this.hoverScale;
+      const x = this.position?.x || 0;
+      const y = this.position?.y || 0;
       // Set transform origin to top-left to prevent position shifts during scaling
-      this.element.style.transformOrigin = 'top left'
-      // Apply only scale transform since we removed CSS translateY conflicts
-      this.element.style.transform = `scale(${finalScale})`
+      this.element.style.transformOrigin = 'top left';
+      // Combine position and scale transforms
+      this.element.style.transform = `translate(${x}px, ${y}px) scale(${finalScale})`;
     }
   }
 
@@ -299,7 +300,12 @@ export class TaskNode {
     closeBtn.className = 'close-button';
     closeBtn.innerHTML = '&times;';
     closeBtn.onclick = () => {
-      document.body.removeChild(modal);
+      modal.classList.remove('show');
+      setTimeout(() => {
+        if (document.body.contains(modal)) {
+          document.body.removeChild(modal);
+        }
+      }, 300);
     };
     
     modalContent.innerHTML = this.renderDetails();
@@ -307,11 +313,21 @@ export class TaskNode {
     modal.appendChild(modalContent);
     
     document.body.appendChild(modal);
+    
+    // Trigger the show animation
+    setTimeout(() => {
+      modal.classList.add('show');
+    }, 10);
 
     // Close modal on outside click
     window.onclick = (event) => {
       if (event.target === modal) {
-        document.body.removeChild(modal);
+        modal.classList.remove('show');
+        setTimeout(() => {
+          if (document.body.contains(modal)) {
+            document.body.removeChild(modal);
+          }
+        }, 300);
       }
     };
   }

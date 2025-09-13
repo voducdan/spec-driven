@@ -5,15 +5,11 @@ import { portfolioData } from '../data/portfolio-data.js'
 
 export class WorkflowCanvas {
   constructor(containerId) {
-    console.log(`🎨 WorkflowCanvas constructor called with containerId: ${containerId}`)
-    
     this.container = document.getElementById(containerId)
     if (!this.container) {
-      console.error(`❌ Container with id '${containerId}' not found in DOM`)
       throw new Error(`Container element '${containerId}' not found`)
     }
     
-    console.log('✅ Container found, initializing properties...')
     this.tasks = new Map()
     this.groups = new Map()
     this.connections = []
@@ -41,25 +37,19 @@ export class WorkflowCanvas {
     }
     window.addEventListener('resize', this.handleResize)
     
-    console.log('🚀 Calling init method...')
     this.init()
-    console.log('✅ WorkflowCanvas constructor completed successfully')
   }
 
   init() {
-    console.log('🎯 WorkflowCanvas init() method started')
     
     if (!this.container) {
       const error = 'Canvas container not found in init()'
-      console.error('❌', error)
       throw new Error(error)
     }
 
     // Create debug overlay for scroll tracking
-    this.createDebugOverlay()
     this.positionMismatches = 0
 
-    console.log('📝 Setting container innerHTML...')
     this.container.innerHTML = `
       <div class="airflow-header-controls">
         <div class="left-controls">
@@ -69,28 +59,37 @@ export class WorkflowCanvas {
             </svg>
             <span>Run</span>
           </button>
-          <button id="pause-dag" class="control-btn" title="Pause DAG">
-            <svg width="16" height="16" viewBox="0 0 16 16">
-              <rect x="3" y="2" width="3" height="12" fill="currentColor"/>
-              <rect x="10" y="2" width="3" height="12" fill="currentColor"/>
-            </svg>
-          </button>
-          <button id="stop-dag" class="control-btn" title="Stop DAG">
-            <svg width="16" height="16" viewBox="0 0 16 16">
-              <rect x="3" y="3" width="10" height="10" fill="currentColor"/>
-            </svg>
-          </button>
           <div class="control-divider"></div>
-          <button id="zoom-in" class="control-btn" title="Zoom In">🔍+</button>
-          <button id="zoom-out" class="control-btn" title="Zoom Out">🔍-</button>
           <button id="fit-screen" class="control-btn" title="Fit to Screen">📱</button>
-          <button id="center-dag" class="control-btn" title="Center DAG">🎯</button>
-          <button id="refresh-dag" class="control-btn" title="Refresh">🔄</button>
+        </div>
+        
+        <div class="center-info">
+          <div class="personal-info">
+            <h2 class="name">VO DUC DAN - DATA ENGINEER</h2>
+            <div class="contact-details">
+              <div class="contact-item">
+                <span class="contact-icon">📍</span>
+                <span>Binh Thanh district, Ho Chi Minh city</span>
+              </div>
+              <div class="contact-item">
+                <span class="contact-icon">📞</span>
+                <span>0972184325</span>
+              </div>
+              <div class="contact-item">
+                <span class="contact-icon">✉️</span>
+                <span>voducdand99@gmail.com</span>
+              </div>
+              <div class="contact-item">
+                <span class="contact-icon">🌐</span>
+                <a href="https://voducdan.github.io/spec-driven/" target="_blank">Portfolio</a>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div class="right-controls">
           <div class="task-status-summary">
-            <h3>Task status count here</h3>
+            <h3>🌟 Portfolio DAG</h3>
             <div class="status-counts">
               <div class="status-item">
                 <span class="status-dot completed"></span>
@@ -143,20 +142,14 @@ export class WorkflowCanvas {
       </div>
     `
 
-    console.log('🔍 Querying DOM elements...')
     this.canvas = this.container.querySelector('#canvas')
     this.tasksLayer = this.container.querySelector('.tasks-layer')
     this.connectionsLayer = this.container.querySelector('.connections-layer')
     this.connectionsGroup = this.container.querySelector('#connections-group');
 
     // Verify the SVG is now outside the tasks-layer
-    console.log('🏗️ DOM Structure Verification:')
-    console.log(`  - SVG parent: ${this.connectionsLayer.parentElement.className}`)
-    console.log(`  - Tasks layer parent: ${this.tasksLayer.parentElement.className}`)
-    console.log(`  - Are SVG and tasks-layer siblings? ${this.connectionsLayer.parentElement === this.tasksLayer.parentElement}`)
 
     // Log canvas dimensions for debugging
-    console.log(`📐 Canvas dimensions: ${this.canvasWidth} x ${this.canvasHeight}`);
 
     // Verify all critical elements are found
     if (!this.canvas) {
@@ -173,18 +166,9 @@ export class WorkflowCanvas {
     }
     
     // Log SVG element details
-    console.log(`🎨 SVG element details:`);
-    console.log(`  - Width attribute: ${this.connectionsLayer.getAttribute('width')}`);
-    console.log(`  - Height attribute: ${this.connectionsLayer.getAttribute('height')}`);
-    console.log(`  - Computed width: ${this.connectionsLayer.clientWidth}`);
-    console.log(`  - Computed height: ${this.connectionsLayer.clientHeight}`);
-    console.log(`  - BoundingClientRect: ${JSON.stringify(this.connectionsLayer.getBoundingClientRect())}`);
     
-    console.log('✅ All DOM elements found successfully')
-    console.log('🎧 Setting up event listeners...')
     this.setupEventListeners()
     
-    console.log('🖱️ Setting up pan and zoom...')
     this.setupPanAndZoom()
     
     // Store instance on canvas element for debugging
@@ -197,9 +181,7 @@ export class WorkflowCanvas {
     window.testConnections = () => this.testConnectionsVisibility()
     window.inspectSVG = inspectSVG
     
-    console.log('🔧 Debug functions exposed: window.debugWorkflow(), window.addTestLine(), window.debugConnections(), window.testConnections(), window.inspectSVG()')
     
-    console.log('✅ WorkflowCanvas init() completed successfully')
   }
 
   setupEventListeners() {
@@ -218,25 +200,68 @@ export class WorkflowCanvas {
     this.container.querySelector('#layout-horizontal')?.addEventListener('click', () => this.setLayout('horizontal'))
     this.container.querySelector('#layout-vertical')?.addEventListener('click', () => this.setLayout('vertical'))
     this.container.querySelector('#auto-layout')?.addEventListener('click', () => {
-      console.log('🎯 Enhanced Auto Layout button clicked')
       this.autoLayoutTasks()
       this.fitToScreen()
       this.updateStats() // Update stats after auto-layout
-      console.log('✅ Enhanced auto-layout completed')
     })
     this.container.querySelector('#toggle-groups')?.addEventListener('click', () => this.toggleGroups())
     this.container.querySelector('#refresh-dag')?.addEventListener('click', () => this.refresh())
+    this.container.querySelector('#simple-view')?.addEventListener('click', () => {
+      if (window.showSimpleView) {
+        window.showSimpleView()
+      } else {
+      }
+    })
     
     // Sidebar toggle (footer button)
     this.container.querySelector('#toggle-sidebar')?.addEventListener('click', () => {
       // For now, just show an alert or console log since we don't have a sidebar
-      console.log('Details toggle clicked - sidebar functionality can be added later')
     })
 
     // The wheel listener for zoom should be on the main canvas to ensure it
     // always captures events, regardless of child element transformations.
     this.canvas.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false })
-    console.log('✅ Wheel listener for zoom attached to canvas')
+
+    // Attach scroll listener to the tasks layer since that's where scrolling happens
+    this.tasksLayer.addEventListener('scroll', () => this.handleScroll())
+  }
+
+  handleScroll() {
+    if (!this.tasksLayer) return
+
+    const scrollLeft = this.tasksLayer.scrollLeft
+    const scrollTop = this.tasksLayer.scrollTop
+    const viewportWidth = this.tasksLayer.clientWidth
+    const viewportHeight = this.tasksLayer.clientHeight
+    const centerX = scrollLeft + viewportWidth / 2
+    const centerY = scrollTop + viewportHeight / 2
+
+    const maxDistance = Math.max(viewportWidth, viewportHeight) / 2
+    const minScale = 0.7
+    const maxScale = 1.0
+
+    this.tasks.forEach(({ task, x, y }) => {
+      if (task.element) {
+        const taskCenterX = x + task.element.offsetWidth / 2
+        const taskCenterY = y + task.element.offsetHeight / 2
+        const distance = Math.sqrt(
+          Math.pow(centerX - taskCenterX, 2) + Math.pow(centerY - taskCenterY, 2)
+        )
+
+        let scale
+        if (distance >= maxDistance) {
+          scale = minScale
+        } else {
+          // Calculate scale linearly from maxScale to minScale
+          scale = maxScale - (distance / maxDistance) * (maxScale - minScale)
+        }
+        
+        task.setScale(scale)
+      }
+    })
+
+    // Update debug overlay if it exists
+    this.updateDebugOverlay(scrollLeft, scrollTop, centerX, centerY)
   }
 
   setupPanAndZoom() {
@@ -313,14 +338,12 @@ export class WorkflowCanvas {
 
   addTask(task, x, y) {
     if (!this.tasksLayer) {
-      console.error('❌ Tasks layer not available for adding task:', task.id)
       this.tasksLayer = this.container.querySelector('.tasks-layer')
       if (!this.tasksLayer) {
         throw new Error('Tasks layer container not found in DOM')
       }
     }
     
-    console.log(`🎯 Adding task "${task.title}" at position (${x}, ${y})`)
     this.tasks.set(task.id, { task, x, y })
     const taskElement = task.render(x, y)
     this.tasksLayer.appendChild(taskElement)
@@ -333,8 +356,6 @@ export class WorkflowCanvas {
     taskElement.addEventListener('click', () => this.selectTask(task))
     
     // Log the task element for debugging
-    console.log(`✅ Task "${task.title}" element created:`, taskElement)
-    console.log(`📍 Task position: left=${taskElement.style.left}, top=${taskElement.style.top}`)
     
     this.updateStats()
     return task
@@ -350,7 +371,6 @@ export class WorkflowCanvas {
 
   addGroup(group, x, y) {
     if (!this.tasksLayer) {
-      console.error('❌ Tasks layer not available for adding group:', group.id)
       this.tasksLayer = this.container.querySelector('.tasks-layer')
       if (!this.tasksLayer) {
         throw new Error('Tasks layer container not found in DOM')
@@ -373,19 +393,11 @@ export class WorkflowCanvas {
       node.classList.remove('selected')
     })
     task.element?.classList.add('selected')
-    
-    // Show detailed view or modal instead of sidebar
-    if (task.showDetailedView) {
-      task.showDetailedView()
-    }
-    
-    console.log('Task selected:', task.title)
   }
 
   updateSidebar(task) {
     // Sidebar removed - this method is kept for compatibility
     // but doesn't do anything in the new layout
-    console.log('updateSidebar called for task:', task.title, '- No sidebar in new layout')
   }
 
   addConnection(fromTaskId, toTaskId, animated = false) {
@@ -393,13 +405,11 @@ export class WorkflowCanvas {
   }
 
   drawConnection(fromTaskId, toTaskId, animated = false, label = '') {
-    console.log(`🔗 Attempting to draw connection: ${fromTaskId} -> ${toTaskId}`);
     
     const fromData = this.tasks.get(fromTaskId) || this.groups.get(fromTaskId);
     const toData = this.tasks.get(toTaskId) || this.groups.get(toTaskId);
 
     if (!fromData || !toData) {
-      console.warn(`Task data not found for connection: ${fromTaskId} -> ${toTaskId}`);
       return;
     }
 
@@ -410,20 +420,49 @@ export class WorkflowCanvas {
     const toElement = toNode.element;
 
     if (!fromElement || !toElement) {
-      console.warn(`Task element not found for connection: ${fromTaskId} -> ${toTaskId}`);
       return;
     }
 
-    // ENHANCED: Use model coordinates directly (no transform multiplication)
-    // SVG now follows the same transform as tasks layer, so coordinates should match
-    const fromX = fromData.x + 240; // Right edge (task width = 240)
-    const fromY = fromData.y + 75;  // Vertical center (task height = 150/2)
-    const toX = toData.x;           // Left edge  
-    const toY = toData.y + 75;      // Vertical center
+    // Enhanced coordinate calculation that accounts for different element types
+    const isFromGroup = !!fromData.group; // fromData came from this.groups.get()
+    const isToGroup = !!toData.group; // toData came from this.groups.get()
+    
+    // Calculate connection points based on model dimensions
+    let fromX, fromY, toX, toY;
+    
+    // Use CSS-defined dimensions instead of getBoundingClientRect to avoid coordinate system mismatch
+    let fromWidth, fromHeight, toWidth, toHeight;
+    
+    if (isFromGroup) {
+      // Use group dimensions
+      fromWidth = fromData.group.width || 280;
+      fromHeight = fromData.group.height || 150;
+    } else {
+      // Use task node dimensions from CSS (220px width, 130px min-height from style.css)
+      fromWidth = 220;
+      fromHeight = 130;
+    }
+    
+    if (isToGroup) {
+      // Use group dimensions
+      toWidth = toData.group.width || 280;
+      toHeight = toData.group.height || 150;
+    } else {
+      // Use task node dimensions from CSS
+      toWidth = 220;
+      toHeight = 130;
+    }
+    
+    // Connection points: from right edge center to left edge center
+    // Account for task border (2px) to ensure connections touch the actual visual edge
+    const borderWidth = 2;
+    
+    fromX = fromData.x + fromWidth - borderWidth;  // Right edge of source element (inside border)
+    fromY = fromData.y + (fromHeight / 2);  // Vertical center of source element
+    
+    toX = toData.x + borderWidth;  // Left edge of target element (inside border)
+    toY = toData.y + (toHeight / 2);  // Vertical center of target element
 
-    console.log(`📊 ENHANCED Connection coordinates: from(${fromX.toFixed(1)}, ${fromY.toFixed(1)}) to(${toX.toFixed(1)}, ${toY.toFixed(1)})`);
-    console.log(`🔄 Transform: scale=${this.scale.toFixed(2)}, pan=(${this.pan.x.toFixed(1)}, ${this.pan.y.toFixed(1)})`);
-    console.log(`📍 Model positions: from(${fromData.x}, ${fromData.y}) to(${toData.x}, ${toData.y})`);
 
     // Enhanced path generation with better routing
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -442,14 +481,35 @@ export class WorkflowCanvas {
     path.setAttribute('stroke-linejoin', 'round');
 
     // Add special styling for group connections
-    const fromIsGroup = fromData.isGroup === true;
-    const toIsGroup = toData.isGroup === true;
+    const fromIsGroup = !!fromData.group; // use same logic as above
+    const toIsGroup = !!toData.group;
     
     if (fromIsGroup) {
       path.classList.add('connection-group-source');
     }
     if (toIsGroup) {
       path.classList.add('connection-group-target');
+    }
+
+    // ENHANCED COLOR DIFFERENTIATION: Apply experience-specific CSS classes for better visual distinction
+    if (connectionType === 'experience-project-clear') {
+      const fromTaskId = fromData.task?.id || fromData.id;
+      
+      switch (fromTaskId) {
+        case 'exp-momo':
+          path.classList.add('connection-exp-momo');
+          break;
+        case 'exp-amanotes':
+          path.classList.add('connection-exp-amanotes');
+          break;
+        case 'exp-fpt':
+          path.classList.add('connection-exp-fpt');
+          break;
+        case 'exp-acb':
+          path.classList.add('connection-exp-acb');
+          break;
+        default:
+      }
     }
 
     const status = fromNode.status || 'pending';
@@ -482,25 +542,22 @@ export class WorkflowCanvas {
 
     try {
       if (!this.connectionsGroup) {
-        console.error('❌ Connections group not found!');
         return;
       }
       
       this.connectionsGroup.appendChild(path);
-      console.log(`✅ Enhanced connection added: ${fromTaskId} -> ${toTaskId}`);
       
     } catch (svgError) {
-      console.error(`❌ Failed to create SVG connection line:`, svgError);
     }
   }
 
-  // Enhanced path generation with smart routing
+  // Enhanced path generation with smart routing and connection clarity improvements
   generateSmartConnectionPath(fromX, fromY, toX, toY, fromData, toData) {
     const deltaX = toX - fromX;
     const deltaY = toY - fromY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
-    // For short distances, use direct line
+  
+    // PRIORITY 2: For direct connections (very short distances), use straight lines
     if (distance < 150) {
       return {
         path: `M ${fromX} ${fromY} L ${toX} ${toY}`,
@@ -508,16 +565,7 @@ export class WorkflowCanvas {
       };
     }
     
-    // For connections that go backwards or have large Y differences, use stepped path
-    if (deltaX < 0 || Math.abs(deltaY) > 200) {
-      const midX = fromX + Math.max(50, Math.abs(deltaX) * 0.3);
-      return {
-        path: `M ${fromX} ${fromY} L ${midX} ${fromY} L ${midX} ${toY} L ${toX} ${toY}`,
-        type: 'stepped'
-      };
-    }
-    
-    // For normal forward connections, use smooth curve
+    // PRIORITY 3: For normal forward connections, use smooth curve
     const controlOffset = Math.min(Math.abs(deltaX) * 0.4, 150);
     const controlY1 = fromY;
     const controlY2 = toY;
@@ -525,6 +573,88 @@ export class WorkflowCanvas {
     return {
       path: `M ${fromX} ${fromY} C ${fromX + controlOffset} ${controlY1} ${toX - controlOffset} ${controlY2} ${toX} ${toY}`,
       type: 'curved'
+    };
+  }
+
+  // NEW METHOD: Check if connection is experience → project
+  isExperienceToProjectConnection(fromData, toData) {
+    const fromIsExperience = fromData.task?.type === 'experience' || fromData.type === 'experience';
+    const toIsProject = toData.task?.type === 'projects' || toData.type === 'projects';
+    return fromIsExperience && toIsProject;
+  }
+
+  // NEW METHOD: Generate clear routing for experience → project connections with ZERO overlap
+  generateClearExperienceProjectPath(fromX, fromY, toX, toY, fromData, toData) {
+    const deltaX = toX - fromX;
+    const deltaY = toY - fromY;
+    const fromTaskId = fromData.task?.id || fromData.id;
+    
+    // Create completely separate routing corridors to eliminate overlap
+    let routingStrategy;
+    
+    switch (fromTaskId) {
+      case 'exp-momo':
+        // MoMo (y:150) - High dramatic curve going way above all tasks
+        routingStrategy = {
+          type: 'high-arc',
+          peakY: fromY - 200, // Go 200px above starting point
+          controlX1: fromX + 200,
+          controlX2: toX - 200,
+          description: 'High arc route - well above all other connections'
+        };
+        break;
+      case 'exp-amanotes':
+        // Amanotes (y:300) - Medium-high curve using left routing corridor  
+        routingStrategy = {
+          type: 'left-corridor',
+          peakY: fromY - 100,
+          controlX1: fromX + 100, // Less horizontal extension
+          controlX2: toX - 300, // Route further left before turning
+          description: 'Left corridor route - avoids center overlap'
+        };
+        break;
+      case 'exp-fpt':
+        // FPT (y:450) - Medium-low curve using right routing corridor
+        routingStrategy = {
+          type: 'right-corridor', 
+          peakY: fromY + 100,
+          controlX1: fromX + 300, // Route further right first
+          controlX2: toX - 100, // Less horizontal extension at end
+          description: 'Right corridor route - separate from left routes'
+        };
+        break;
+      case 'exp-acb':
+        // ACB (y:600) - Low dramatic curve going way below
+        routingStrategy = {
+          type: 'low-arc',
+          peakY: fromY + 200, // Go 200px below starting point
+          controlX1: fromX + 200,
+          controlX2: toX - 200,
+          description: 'Low arc route - well below all other connections'
+        };
+        break;
+      default:
+        // Default strategy for unknown tasks
+        routingStrategy = {
+          type: 'default',
+          peakY: fromY + (deltaY > 0 ? 100 : -100),
+          controlX1: fromX + 150,
+          controlX2: toX - 150,
+          description: 'Default routing'
+        };
+    }
+    
+    // Generate path using the routing strategy
+    const { peakY, controlX1, controlX2, type, description } = routingStrategy;
+    
+    // Create a cubic Bézier curve that uses the routing corridor
+    // This ensures each connection has its own "highway" and won't overlap
+    const path = `M ${fromX} ${fromY} C ${controlX1} ${peakY} ${controlX2} ${peakY} ${toX} ${toY}`;
+    
+    
+    return {
+      path: path,
+      type: 'experience-project-clear'
     };
   }
 
@@ -574,23 +704,22 @@ export class WorkflowCanvas {
 
   // Enhanced connection handling for different types
   isGroupToGroupConnection(fromData, toData) {
-    return (fromData.group && toData.group) || 
-           (this.groups.has(fromData.from) && this.groups.has(toData.to));
+    // Check if both from and to are groups (data came from this.groups.get())
+    return !!fromData.group && !!toData.group;
   }
 
   isTaskToGroupConnection(fromData, toData) {
-    return (!fromData.group && toData.group) || 
-           (!this.groups.has(fromData.from) && this.groups.has(toData.to));
+    // Check if from is a task and to is a group
+    return !!fromData.task && !!toData.group;
   }
 
   isGroupToTaskConnection(fromData, toData) {
-    return (fromData.group && !toData.group) || 
-           (this.groups.has(fromData.from) && !this.groups.has(toData.to));
+    // Check if from is a group and to is a task
+    return !!fromData.group && !!toData.task;
   }
 
   // Enhanced method to create all types of connections
   createAllConnections() {
-    console.log('🔗 Creating all connection types...');
     
     // Clear existing connections first
     this.clearConnections();
@@ -608,46 +737,35 @@ export class WorkflowCanvas {
         let strokeStyle = '';
         
         if (this.isGroupToGroupConnection(fromData, toData)) {
-          connectionClass += ' group-connection';
-          strokeWidth = '4';
-          strokeStyle = '6 3'; // dashed
-          console.log(`🏢 Drawing group-to-group connection: ${conn.from} -> ${conn.to}`);
+          // Skip group-to-group connections entirely
+          return; // Skip this connection
         } else if (this.isTaskToGroupConnection(fromData, toData)) {
-          console.log(`📋 Drawing task-to-group connection: ${conn.from} -> ${conn.to}`);
         } else if (this.isGroupToTaskConnection(fromData, toData)) {
-          console.log(`🏢📋 Drawing group-to-task connection: ${conn.from} -> ${conn.to}`);
         } else {
-          console.log(`📋📋 Drawing task-to-task connection: ${conn.from} -> ${conn.to}`);
         }
         
         this.drawConnection(conn.from, conn.to, conn.animated, conn.label);
         connectionCount++;
       } else {
-        console.warn(`⚠️ Connection ${conn.from} -> ${conn.to} skipped - missing data`);
       }
     });
     
-    console.log(`✅ Created ${connectionCount} connections of various types`);
   }
 
   createPortfolioDAG() {
-    console.log('🚀 Starting portfolio DAG creation...');
     
     return new Promise((resolve, reject) => {
       try {
         this.clearCanvas();
         
         const dagData = portfolioData.dagStructure;
-        console.log('📊 DAG data loaded:', dagData);
         
         if (!dagData || !dagData.tasks) {
           throw new Error('DAG structure not found in portfolio data');
         }
 
         // Create tasks and groups from the unified task list
-        console.log(`📝 Creating ${dagData.tasks.length} tasks and groups...`);
         dagData.tasks.forEach((itemData, index) => {
-          console.log(`Creating item ${index + 1}: ${itemData.title}`);
           try {
             if (itemData.isGroup) {
               const group = new TaskGroup(
@@ -658,7 +776,6 @@ export class WorkflowCanvas {
               );
               group.dependencies = itemData.dependencies || [];
               this.addGroup(group, itemData.position.x, itemData.position.y);
-              console.log(`✅ Group "${itemData.title}" created successfully`);
             } else {
               const task = new TaskNode(
                 itemData.id, 
@@ -672,10 +789,8 @@ export class WorkflowCanvas {
               task.dependencies = itemData.dependencies || [];
               task.group = itemData.group; // Assign group to task
               this.addTask(task, itemData.position.x, itemData.position.y);
-              console.log(`✅ Task "${itemData.title}" created successfully`);
             }
           } catch (itemError) {
-            console.error(`❌ Failed to create item "${itemData.title}":`, itemError);
           }
         });
 
@@ -683,7 +798,6 @@ export class WorkflowCanvas {
         this.calculateGroupBounds();
 
         // Create connections based on dependencies
-        console.log('🔗 Creating task connections...');
         let connectionCount = 0;
         dagData.tasks.forEach(itemData => {
           if (itemData.dependencies && itemData.dependencies.length > 0) {
@@ -699,19 +813,16 @@ export class WorkflowCanvas {
               
               this.connections.push({ from: fromId, to: itemData.id, animated: false, label: label });
               connectionCount++;
-              console.log(`📍 Connection ${connectionCount}: ${fromId} -> ${itemData.id} ${label ? `(${label})` : ''}`);
             });
           }
         });
 
-        console.log(`📊 Total connections created: ${this.connections.length}`);
 
         // Add a test line to verify SVG is working
         this.addTestLine();
 
         // Defer connection drawing to ensure all elements are rendered and laid out
         requestAnimationFrame(() => {
-          console.log('🎬 Running deferred connection drawing...')
           
           // Add visual indicator that connections are being processed
           const indicator = document.createElement('div')
@@ -742,56 +853,27 @@ export class WorkflowCanvas {
           setTimeout(() => {
             document.body.removeChild(indicator)
             
-            console.log('🔍 Post-draw verification:')
             const pathCount = this.connectionsGroup?.querySelectorAll('path').length || 0
-            console.log(`📊 Total paths in DOM: ${pathCount}`)
-            
-            // Show success/failure notification
-            const result = document.createElement('div')
-            result.style.cssText = `
-              position: fixed; top: 20px; right: 20px; 
-              background: ${pathCount > 0 ? '#10b981' : '#ef4444'}; color: white;
-              padding: 15px; border-radius: 8px; z-index: 10000;
-              font-family: monospace; max-width: 300px;
-            `
-            result.innerHTML = `
-              <div style="font-weight: bold;">
-                ${pathCount > 0 ? '✅ CONNECTIONS DRAWN!' : '❌ NO CONNECTIONS'}
-              </div>
-              <div style="font-size: 12px; margin-top: 5px;">
-                ${pathCount > 0 ? `${pathCount} paths created successfully` : 'Check console for debugging info'}
-              </div>
-              <div style="font-size: 11px; margin-top: 5px; opacity: 0.8;">
-                ${pathCount > 0 ? 'SVG positioning fix working' : 'Run window.testConnections() to debug'}
-              </div>
-            `
-            document.body.appendChild(result)
-            
-            // Auto-remove notification after 5 seconds
-            setTimeout(() => {
-              if (document.body.contains(result)) {
-                document.body.removeChild(result)
-              }
-            }, 5000)
             
             if (pathCount === 0) {
-              console.log('⚠️ No paths found after drawing - attempting manual test draw')
               this.createTestElements()
             }
           }, 1000)
         });
         
-        console.log('✅ Portfolio DAG created successfully!');
+        
+        // Expose test functions globally for debugging
+        window.testKingConnection = () => this.testKingConnection();
+        window.workflowCanvas = this;
+        
         resolve();
       } catch (error) {
-        console.error('❌ Fatal error during portfolio DAG creation:', error);
         reject(error);
       }
     });
   }
 
   addTestLine() {
-    console.log('🧪 Adding test line to verify SVG functionality');
     if (this.connectionsGroup) {
       // Clear any existing test line
       const existingTestLine = this.connectionsGroup.querySelector('#test-line');
@@ -809,125 +891,79 @@ export class WorkflowCanvas {
       testPath.setAttribute('stroke-linecap', 'round');
       
       this.connectionsGroup.appendChild(testPath);
-      console.log('✅ Test line added to connections group');
       
       // Verify it was added and get its properties
       const testLine = this.connectionsGroup.querySelector('#test-line');
-      console.log(`🔍 Test line found in DOM: ${!!testLine}`);
       if (testLine) {
         const testRect = testLine.getBoundingClientRect();
-        console.log(`📦 Test line bounding rect: ${JSON.stringify(testRect)}`);
-        console.log(`📍 Test line d attribute: ${testLine.getAttribute('d')}`);
-        console.log(`🎨 Test line computed style stroke: ${getComputedStyle(testLine).stroke}`);
       }
     } else {
-      console.error('❌ Cannot add test line - connectionsGroup not found');
     }
   }
 
   // Method to manually trigger connection drawing for debugging
   debugDrawConnections() {
-    console.log('🐛 Manual debug connection drawing triggered');
-    console.log(`📊 Available tasks: ${Array.from(this.tasks.keys()).join(', ')}`);
-    console.log(`📊 Available groups: ${Array.from(this.groups.keys()).join(', ')}`);
-    console.log(`📊 Defined connections: ${this.connections.length}`);
     
     this.connections.forEach((conn, index) => {
-      console.log(`🔗 Connection ${index + 1}: ${conn.from} -> ${conn.to}`);
       const fromExists = this.tasks.has(conn.from) || this.groups.has(conn.from);
       const toExists = this.tasks.has(conn.to) || this.groups.has(conn.to);
-      console.log(`  - From exists: ${fromExists}, To exists: ${toExists}`);
     });
     
     this.redrawAllConnections();
   }
 
+  // Debug function to test specific connections
+  testKingConnection() {
+    
+    const kingData = this.tasks.get('king') || this.groups.get('king');
+    const eduData = this.tasks.get('group-education') || this.groups.get('group-education');
+    
+    
+    if (kingData && eduData) {
+      this.drawConnection('king', 'group-education', false, 'test connection');
+    } else {
+    }
+  }
+
   // ENHANCED COMPREHENSIVE DEBUGGING FUNCTION
   comprehensiveDebug() {
-    console.log('🔍 === COMPREHENSIVE SVG CONNECTION DEBUG ===')
     
     // 1. Check container hierarchy
-    console.log('📂 Container hierarchy:')
-    console.log('  this.container:', this.container)
-    console.log('  this.canvas:', this.canvas)
-    console.log('  this.tasksLayer:', this.tasksLayer)
-    console.log('  this.connectionsLayer:', this.connectionsLayer)
-    console.log('  this.connectionsGroup:', this.connectionsGroup)
     
     // 2. Check SVG element state
     if (this.connectionsLayer) {
-      console.log('🎨 SVG Layer Analysis:')
       const svgRect = this.connectionsLayer.getBoundingClientRect()
-      console.log(`  Dimensions: ${this.connectionsLayer.getAttribute('width')} x ${this.connectionsLayer.getAttribute('height')}`)
-      console.log(`  Client size: ${this.connectionsLayer.clientWidth} x ${this.connectionsLayer.clientHeight}`)
-      console.log(`  BoundingRect:`, svgRect)
-      console.log(`  Visibility: ${getComputedStyle(this.connectionsLayer).visibility}`)
-      console.log(`  Display: ${getComputedStyle(this.connectionsLayer).display}`)
-      console.log(`  Opacity: ${getComputedStyle(this.connectionsLayer).opacity}`)
-      console.log(`  Z-index: ${getComputedStyle(this.connectionsLayer).zIndex}`)
-      console.log(`  Position: ${getComputedStyle(this.connectionsLayer).position}`)
-      console.log(`  Transform: ${getComputedStyle(this.connectionsLayer).transform}`)
     }
     
     // 3. Check connections group
     if (this.connectionsGroup) {
-      console.log('🎯 Connections Group Analysis:')
       const groupRect = this.connectionsGroup.getBoundingClientRect()
-      console.log(`  BoundingRect:`, groupRect)
-      console.log(`  Children count: ${this.connectionsGroup.children.length}`)
-      console.log(`  Paths count: ${this.connectionsGroup.querySelectorAll('path').length}`)
       
       // Check each path in detail
       const paths = this.connectionsGroup.querySelectorAll('path')
       paths.forEach((path, index) => {
         const pathRect = path.getBoundingClientRect()
         const computedStyle = getComputedStyle(path)
-        console.log(`    Path ${index + 1}:`)
-        console.log(`      d: ${path.getAttribute('d')}`)
-        console.log(`      stroke: ${path.getAttribute('stroke')}`)
-        console.log(`      stroke-width: ${path.getAttribute('stroke-width')}`)
-        console.log(`      BoundingRect:`, pathRect)
-        console.log(`      Computed stroke: ${computedStyle.stroke}`)
-        console.log(`      Computed stroke-width: ${computedStyle.strokeWidth}`)
-        console.log(`      Computed visibility: ${computedStyle.visibility}`)
-        console.log(`      Computed opacity: ${computedStyle.opacity}`)
-        console.log(`      Total length: ${path.getTotalLength && path.getTotalLength()}`)
       })
     }
     
     // 4. Check task positions
-    console.log('📍 Task Positions Analysis:')
     this.tasks.forEach((taskData, taskId) => {
       const element = taskData.task.element
       if (element) {
         const rect = element.getBoundingClientRect()
         const style = getComputedStyle(element)
-        console.log(`  ${taskId}:`)
-        console.log(`    BoundingRect:`, rect)
-        console.log(`    Transform: ${style.transform}`)
-        console.log(`    Position: ${style.position}`)
-        console.log(`    Z-index: ${style.zIndex}`)
       }
     })
     
     // 5. Check canvas container positioning
-    console.log('🏠 Canvas Container Analysis:')
     const canvasRect = this.canvas.getBoundingClientRect()
     const canvasStyle = getComputedStyle(this.canvas)
-    console.log(`  Canvas BoundingRect:`, canvasRect)
-    console.log(`  Canvas transform: ${canvasStyle.transform}`)
-    console.log(`  Canvas position: ${canvasStyle.position}`)
-    console.log(`  Canvas overflow: ${canvasStyle.overflow}`)
     
     const tasksLayerRect = this.tasksLayer.getBoundingClientRect()
     const tasksLayerStyle = getComputedStyle(this.tasksLayer)
-    console.log(`  TasksLayer BoundingRect:`, tasksLayerRect)
-    console.log(`  TasksLayer transform: ${tasksLayerStyle.transform}`)
-    console.log(`  TasksLayer position: ${tasksLayerStyle.position}`)
-    console.log(`  TasksLayer overflow: ${tasksLayerStyle.overflow}`)
     
     // 6. Test coordinate calculation manually
-    console.log('🧮 Manual Coordinate Test:')
     if (this.connections.length > 0) {
       const testConn = this.connections[0]
       const fromData = this.tasks.get(testConn.from) || this.groups.get(testConn.from)
@@ -942,26 +978,19 @@ export class WorkflowCanvas {
           const toRect = toElement.getBoundingClientRect()
           const canvasRect = this.tasksLayer.getBoundingClientRect()
           
-          console.log(`  Test connection: ${testConn.from} -> ${testConn.to}`)
-          console.log(`  From element rect:`, fromRect)
-          console.log(`  To element rect:`, toRect)
-          console.log(`  Canvas rect:`, canvasRect)
           
           const fromX = (fromRect.left - canvasRect.left) + fromRect.width
           const fromY = (fromRect.top - canvasRect.top) + fromRect.height / 2
           const toX = toRect.left - canvasRect.left
           const toY = (toRect.top - canvasRect.top) + toRect.height / 2
           
-          console.log(`  Calculated coordinates: from(${fromX}, ${fromY}) to(${toX}, ${toY})`)
         }
       }
     }
     
     // 7. Create a test visible element to verify SVG is working
-    console.log('🧪 Creating test visible elements...')
     this.createTestElements()
     
-    console.log('✅ === DEBUG COMPLETE ===')
   }
 
   // Create test elements to verify SVG rendering
@@ -1000,37 +1029,28 @@ export class WorkflowCanvas {
     testPath.setAttribute('data-test', 'path')
     this.connectionsGroup.appendChild(testPath)
     
-    console.log('🎨 Test elements created: line, circle, path')
     
     // Check if they're visible
     setTimeout(() => {
       const testElements = this.connectionsGroup.querySelectorAll('[data-test]')
       testElements.forEach((element, index) => {
         const rect = element.getBoundingClientRect()
-        console.log(`  Test element ${index + 1} (${element.getAttribute('data-test')}):`, rect)
       })
     }, 100)
   }
 
   // COMPREHENSIVE TEST FUNCTION - Can be called from browser console
   testConnectionsVisibility() {
-    console.log('🧪 === COMPREHENSIVE CONNECTION VISIBILITY TEST ===')
     
     // 1. Clear any existing connections and test elements
     this.clearConnections()
     
     // 2. Verify DOM structure is correct
-    console.log('🏗️ DOM Structure Check:')
-    console.log(`  SVG parent: ${this.connectionsLayer.parentElement.className}`)
-    console.log(`  Tasks layer parent: ${this.tasksLayer.parentElement.className}`)
-    console.log(`  Are they siblings? ${this.connectionsLayer.parentElement === this.tasksLayer.parentElement}`)
     
     // 3. Add visible test elements
-    console.log('🎨 Adding test elements...')
     this.createTestElements()
     
     // 4. Test coordinate calculation with current task positions
-    console.log('📍 Testing coordinate calculations:')
     const taskIds = Array.from(this.tasks.keys())
     if (taskIds.length >= 2) {
       const task1Id = taskIds[0]
@@ -1048,16 +1068,12 @@ export class WorkflowCanvas {
           const rect2 = elem2.getBoundingClientRect()
           const canvasRect = this.canvas.getBoundingClientRect()
           
-          console.log(`  Task ${task1Id} rect:`, rect1)
-          console.log(`  Task ${task2Id} rect:`, rect2)
-          console.log(`  Canvas rect:`, canvasRect)
           
           const fromX = (rect1.left - canvasRect.left) + rect1.width
           const fromY = (rect1.top - canvasRect.top) + rect1.height / 2
           const toX = rect2.left - canvasRect.left
           const toY = (rect2.top - canvasRect.top) + rect2.height / 2
           
-          console.log(`  Calculated connection: (${fromX}, ${fromY}) -> (${toX}, ${toY})`)
           
           // Draw a test connection
           const testPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
@@ -1070,13 +1086,11 @@ export class WorkflowCanvas {
           testPath.setAttribute('data-test', 'connection')
           
           this.connectionsGroup.appendChild(testPath)
-          console.log('✅ Test connection drawn')
         }
       }
     }
     
     // 5. Force redraw all actual connections
-    console.log('🔄 Redrawing all actual connections...')
     this.redrawAllConnections()
     
     // 6. Final verification
@@ -1085,20 +1099,16 @@ export class WorkflowCanvas {
       const testPaths = this.connectionsGroup.querySelectorAll('[data-test]')
       const realPaths = allPaths.length - testPaths.length
       
-      console.log(`📊 Final count: ${allPaths.length} total paths (${realPaths} real, ${testPaths.length} test)`)
       
       allPaths.forEach((path, index) => {
         const rect = path.getBoundingClientRect()
         const isVisible = rect.width > 0 && rect.height > 0
-        console.log(`  Path ${index + 1}: ${isVisible ? '✅ VISIBLE' : '❌ HIDDEN'} - ${path.getAttribute('d')}`)
       })
       
-      console.log('✅ === TEST COMPLETE ===')
     }, 500)
   }
 
   calculateGroupBounds() {
-    console.log('📏 Calculating group bounds...');
     this.groups.forEach((groupData, groupId) => {
       const tasksInGroup = Array.from(this.tasks.values()).filter(
         (taskData) => taskData.task.group === groupId
@@ -1130,17 +1140,14 @@ export class WorkflowCanvas {
 
         groupData.group.updatePosition(groupX, groupY);
         groupData.group.updateSize(groupWidth, groupHeight);
-        console.log(`✅ Group "${groupData.group.title}" bounds calculated:`, { x: groupX, y: groupY, width: groupWidth, height: groupHeight });
       }
     });
   }
 
   redrawAllConnections(retryCount = 0) {
-    console.log(`🎨 redrawAllConnections called (attempt ${retryCount + 1})`);
     
     const MAX_RETRIES = 5;
     if (retryCount > MAX_RETRIES) {
-      console.error("❌ Max retries reached. Could not draw connections because task elements have no dimensions.");
       return;
     }
 
@@ -1149,59 +1156,46 @@ export class WorkflowCanvas {
       (t) => t.task.element && t.task.element.offsetWidth > 0
     );
 
-    console.log(`📋 Tasks ready check: ${tasksReady}, total tasks: ${this.tasks.size}, total connections: ${this.connections.length}`);
 
     if (!tasksReady && this.tasks.size > 0) {
-      console.warn(`🎨 Task elements not ready. Retrying connection draw... (Attempt ${retryCount + 1})`);
       requestAnimationFrame(() => this.redrawAllConnections(retryCount + 1));
       return;
     }
 
     this.clearConnections();
-    console.log(`🧹 Connections cleared. Drawing ${this.connections.length} connections...`);
     
     this.connections.forEach((conn, index) => {
-      console.log(`🔗 Drawing connection ${index + 1}/${this.connections.length}: ${conn.from} -> ${conn.to}`);
       this.drawConnection(conn.from, conn.to, conn.animated, conn.label);
     });
     
-    console.log(`✅ redrawAllConnections completed`);
   }
 
   clearConnections() {
     if (this.connectionsGroup) {
       const pathCount = this.connectionsGroup.querySelectorAll('path').length;
-      console.log(`🧹 Clearing ${pathCount} existing connections`);
       
       // Log what's being cleared for debugging
       const paths = this.connectionsGroup.querySelectorAll('path');
       paths.forEach((path, index) => {
-        console.log(`  Removing path ${index + 1}: ${path.getAttribute('d')}`);
       });
       
       this.connectionsGroup.innerHTML = '';
-      console.log(`✅ Connections cleared`);
       
       // Verify clearing worked
       const remainingPaths = this.connectionsGroup.querySelectorAll('path').length;
-      console.log(`📊 Remaining paths after clear: ${remainingPaths}`);
     } else {
-      console.error('❌ Cannot clear connections - connectionsGroup not found');
     }
   }
 
   clearCanvas() {
     // Ensure DOM elements are available
     if (!this.tasksLayer) {
-      console.warn('Tasks layer not found, reinitializing...')
       this.tasksLayer = this.container.querySelector('.tasks-layer')
     }
     if (!this.connectionsLayer) {
-      console.warn('Connections layer not found, reinitializing...')
       this.connectionsLayer = this.container.querySelector('.connections-layer')
     }
     if (!this.connectionsGroup) {
-      console.warn('Connections group not found, reinitializing...')
       this.connectionsGroup = this.container.querySelector('#connections-group')
     }
 
@@ -1219,19 +1213,16 @@ export class WorkflowCanvas {
   }
 
   runDAG() {
-    console.log('Running Portfolio DAG...')
     this.updateDAGStatus('running')
     this.animateDAGExecution()
   }
 
   pauseDAG() {
-    console.log('Pausing Portfolio DAG...')
     this.updateDAGStatus('paused')
     this.isAnimating = false
   }
 
   stopDAG() {
-    console.log('Stopping Portfolio DAG...')
     this.updateDAGStatus('stopped')
     this.isAnimating = false
     // Reset all task statuses
@@ -1328,25 +1319,21 @@ export class WorkflowCanvas {
     if (indicator) {
       indicator.className = `status-indicator ${status}`
     } else {
-      console.warn('⚠️ DAG status indicator element not found')
     }
     
     if (text) {
       text.textContent = `Portfolio DAG - ${status.charAt(0).toUpperCase() + status.slice(1)}`
     } else {
-      console.warn('⚠️ DAG status text element not found')
     }
   }
 
   updateStats() {
-    console.log('📊 Updating task statistics...')
     
     const taskCount = this.tasks.size
     const successCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'success').length
     const runningCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'running').length
     const failedCount = Array.from(this.tasks.values()).filter(({ task }) => task.status === 'failed').length
     
-    console.log(`📈 Stats: Total=${taskCount}, Success=${successCount}, Running=${runningCount}, Failed=${failedCount}`)
     
     // Update with error handling
     const taskCountEl = this.container.querySelector('#task-count')
@@ -1356,30 +1343,22 @@ export class WorkflowCanvas {
     
     if (taskCountEl) {
       taskCountEl.textContent = taskCount
-      console.log('✅ Updated task count:', taskCount)
     } else {
-      console.warn('⚠️ Task count element not found')
     }
     
     if (successCountEl) {
       successCountEl.textContent = successCount
-      console.log('✅ Updated success count:', successCount)
     } else {
-      console.warn('⚠️ Success count element not found')
     }
     
     if (runningCountEl) {
       runningCountEl.textContent = runningCount
-      console.log('✅ Updated running count:', runningCount)
     } else {
-      console.warn('⚠️ Running count element not found')
     }
     
     if (failedCountEl) {
       failedCountEl.textContent = failedCount
-      console.log('✅ Updated failed count:', failedCount)
     } else {
-      console.warn('⚠️ Failed count element not found')
     }
   }
 
@@ -1473,12 +1452,10 @@ export class WorkflowCanvas {
     this.pan.y = (canvasHeight - scaledContentHeight) / 2 - minY * this.scale;
 
     this.updateCanvasTransform();
-    console.log('🎯 DAG centered successfully');
   }
 
   toggleSidebar() {
     // Sidebar removed in new layout - method kept for compatibility
-    console.log('toggleSidebar called - No sidebar in new Airflow layout')
   }
 
   runTask(taskId) {
@@ -1503,13 +1480,11 @@ export class WorkflowCanvas {
   }
 
   refresh() {
-    console.log('🔄 Refreshing Portfolio DAG...')
     this.createPortfolioDAG()
     this.scrollToShowAllComponents() // Use scroll-based centering
     // Force stats update after refresh
     setTimeout(() => {
       this.updateStats()
-      console.log('📊 Stats forcefully updated after refresh')
     }, 500)
   }
 
@@ -1554,7 +1529,6 @@ export class WorkflowCanvas {
         if (xOverlap && yOverlap) {
           const overlapKey = `${Math.min(i, j)}-${Math.max(i, j)}`
           if (!resolvedOverlaps.has(overlapKey)) {
-            console.warn(`⚠️ Enhanced overlap resolution between "${task1.task.title}" and "${task2.task.title}"`)
             
             // Smart resolution: move task with fewer dependencies
             const task1Dependencies = this.getTaskDependencies(task1.task.id).length
@@ -1582,7 +1556,6 @@ export class WorkflowCanvas {
             }
             
             resolvedOverlaps.add(overlapKey)
-            console.log(`📍 Smart repositioned "${taskToMove.task.title}" to avoid overlap: (${taskToMove.x}, ${taskToMove.y})`)
           }
         }
       }
@@ -1596,7 +1569,6 @@ export class WorkflowCanvas {
 
   // Enhanced method to auto-layout tasks with smart spacing and overlap prevention
   autoLayoutTasks() {
-    console.log('🎨 Auto-layouting tasks with enhanced spacing...')
     
     const taskArray = Array.from(this.tasks.values())
     const taskWidth = 240 // Increased width for better spacing
@@ -1638,7 +1610,6 @@ export class WorkflowCanvas {
             taskData.task.element.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
           }
           
-          console.log(`📍 Enhanced positioning "${taskData.task.title}" at level ${levelNum}: (${x}, ${y})`)
         }
       })
     })
@@ -1657,7 +1628,6 @@ export class WorkflowCanvas {
 
   // New method to position task groups below main tasks
   positionTaskGroupsBelowTasks() {
-    console.log('📦 Positioning task groups far below main tasks...')
     
     // Find the lowest Y position of all tasks
     const taskPositions = Array.from(this.tasks.values())
@@ -1686,7 +1656,6 @@ export class WorkflowCanvas {
         group.element.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
       }
       
-      console.log(`📦 Positioned group "${group.title}" far below at (${x}, ${y})`)
     })
   }
 
@@ -1729,35 +1698,6 @@ export class WorkflowCanvas {
     return levelGroups
   }
 
-  createDebugOverlay() {
-    // Create a debug overlay to show scroll and position information
-    const debugOverlay = document.createElement('div')
-    debugOverlay.id = 'scroll-debug-overlay'
-    debugOverlay.style.cssText = `
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 15px;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 12px;
-      z-index: 10000;
-      max-width: 300px;
-      pointer-events: none;
-    `
-    debugOverlay.innerHTML = `
-      <h4 style="margin: 0 0 10px 0; color: #3b82f6;">Scroll Debug</h4>
-      <div id="debug-scroll-pos">Scroll: (0, 0)</div>
-      <div id="debug-viewport-center">Center: (0, 0)</div>
-      <div id="debug-task-count">Tasks: 0</div>
-      <div id="debug-position-status">Position Status: OK</div>
-    `
-    document.body.appendChild(debugOverlay)
-    this.debugOverlay = debugOverlay
-  }
-
   updateDebugOverlay(scrollLeft, scrollTop, centerX, centerY) {
     if (!this.debugOverlay) return
     
@@ -1773,13 +1713,11 @@ export class WorkflowCanvas {
   }
 
   toggleGroups() {
-    console.log('🔄 Toggling group visibility...');
     
     // Find all group elements
     const groupElements = document.querySelectorAll('.task-node[data-is-group="true"]');
     const groupNodes = Array.from(this.tasks.values()).filter(taskData => taskData.task && taskData.task.isGroup);
     
-    console.log(`Found ${groupElements.length} group elements and ${groupNodes.length} group nodes`);
     
     // Toggle visibility state
     if (!this.groupsVisible) {
@@ -1802,7 +1740,6 @@ export class WorkflowCanvas {
     // Update connections since group visibility affects connections
     this.redrawAllConnections();
     
-    console.log(`✅ Groups ${this.groupsVisible ? 'shown' : 'hidden'}`);
   }
 }
 
@@ -1815,7 +1752,6 @@ window.debugConnections = function() {
   if (canvas && canvas.workflowInstance) {
     canvas.workflowInstance.debugDrawConnections();
   } else {
-    console.error('No workflow instance found');
   }
 }
 
@@ -1824,7 +1760,6 @@ window.addTestLine = function() {
   if (canvas && canvas.workflowInstance) {
     canvas.workflowInstance.addTestLine();
   } else {
-    console.error('No workflow instance found');
   }
 }
 
@@ -1835,17 +1770,9 @@ window.inspectSVG = function() {
     const svg = instance.connectionsLayer;
     const group = instance.connectionsGroup;
     
-    console.log('=== SVG Inspection ===');
-    console.log('SVG element:', svg);
-    console.log('SVG dimensions:', svg.getAttribute('width'), 'x', svg.getAttribute('height'));
-    console.log('SVG computed size:', svg.clientWidth, 'x', svg.clientHeight);
-    console.log('SVG bounding rect:', svg.getBoundingClientRect());
-    console.log('Connections group:', group);
-    console.log('Paths in group:', group.querySelectorAll('path').length);
     
     const paths = group.querySelectorAll('path');
     paths.forEach((path, index) => {
-      console.log(`Path ${index + 1}:`, {
         d: path.getAttribute('d'),
         stroke: path.getAttribute('stroke'),
         strokeWidth: path.getAttribute('stroke-width'),
@@ -1853,6 +1780,5 @@ window.inspectSVG = function() {
       });
     });
   } else {
-    console.error('No workflow instance found');
   }
 }

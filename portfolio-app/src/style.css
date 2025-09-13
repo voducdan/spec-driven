@@ -37,9 +37,11 @@ body {
   background-color: #f8fafc;
   color: var(--text-primary);
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow: hidden; /* Changed from overflow-x: hidden to match airflow layout */
   margin: 0;
   padding: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 /* Header Styles */
@@ -655,12 +657,9 @@ body {
 .task-title {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   line-height: 1.2;
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .task-status {
