@@ -1502,11 +1502,6 @@ export class WorkflowCanvas {
       canvas.style.width = `${this.canvasWidth}px`
       canvas.style.height = `${this.canvasHeight}px`
     }
-    
-    // Redraw connections if they exist
-    if (this.connections.length > 0) {
-      this.redrawConnections()
-    }
   }
 
   // Enhanced overlap detection with better collision resolution
@@ -1619,11 +1614,6 @@ export class WorkflowCanvas {
     
     // Apply final overlap detection and resolution
     this.detectAndResolveOverlapsEnhanced()
-    
-    // Redraw connections after repositioning
-    setTimeout(() => {
-      this.redrawConnections()
-    }, 100)
   }
 
   // New method to position task groups below main tasks

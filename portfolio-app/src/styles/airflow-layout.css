@@ -243,7 +243,6 @@ body {
   right: 0;
   bottom: 0;
   z-index: 2;
-  overflow: auto; /* This will enable scrolling */
   padding: 50px; /* Add minimal padding for edge buffer */
   margin: 0;
   box-sizing: border-box; /* Include padding in width/height calculations */
